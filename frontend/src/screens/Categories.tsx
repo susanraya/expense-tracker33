@@ -1,5 +1,4 @@
 // @ts-nocheck -- generated from the approved design under its JS runtime contract; not hand-written TypeScript.
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
 
 import * as UI from "@/lib/ui";
@@ -58,7 +57,6 @@ export default function Screen() {
   const [deletingId, setDeletingId] = React.useState(null);
   const [pendingDeleteId, setPendingDeleteId] = React.useState(null);
   const nameInputRef = React.useRef(null);
-  const renameInputRef = React.useRef(null);
 
   const loadCategories = React.useCallback(async () => {
     setStatus("loading");
@@ -66,7 +64,7 @@ export default function Screen() {
       const data = await apiFetch("/categories");
       setCategories(Array.isArray(data) ? data : []);
       setStatus("ready");
-    } catch (err) {
+    } catch {
       setStatus("error");
     }
   }, []);
@@ -510,7 +508,6 @@ export default function Screen() {
                                 </Label>
                                 <Input
                                   id={`rename-${cat.id}`}
-                                  ref={renameInputRef}
                                   value={renameValue}
                                   onChange={(e) => setRenameValue(e.target.value)}
                                   className="np-focus h-10 text-sm"

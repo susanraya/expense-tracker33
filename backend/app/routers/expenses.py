@@ -156,10 +156,9 @@ def update_expense(
             detail=[{"loc": ["body", "category_id"], "msg": "category_id may not be null"}],
         )
 
-    new_category_id = expense.category_id
     if "category_id" in fields_set:
         category = _get_owned_category(db, user, payload.category_id)
-        new_category_id = category.id
+        expense.category_id = category.id
 
     if "amount" in fields_set and payload.amount is not None:
         expense.amount = payload.amount
@@ -167,7 +166,6 @@ def update_expense(
         expense.spent_on = payload.date
     if "description" in fields_set and payload.description is not None:
         expense.note = payload.description
-    expense.category_id = new_category_id
 
     db.commit()
     db.refresh(expense)
