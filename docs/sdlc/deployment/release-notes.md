@@ -3,6 +3,17 @@
 > Maintained by QuorQ AI SDLC. Text between `sdlc:auto` markers is regenerated; anything outside them is yours and is kept.
 
 <!-- sdlc:auto:start releases -->
+## e7781eabb85e — 2026-11-18
+
+**Commit:** `e7781ea`
+
+**Delivered:**
+- US-006: Add an expense
+- US-010: Create a category
+- US-011: Edit a category
+- US-012: Delete a category
+- US-FIX-1: Fix the scaffold's failing checks
+
 ## 536dcb5dc27a — 2026-11-18
 
 **Commit:** `536dcb5`
