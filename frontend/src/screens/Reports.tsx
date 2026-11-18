@@ -1,5 +1,5 @@
 // @ts-nocheck -- generated from the approved design under its JS runtime contract; not hand-written TypeScript.
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import React from "react";
 
 import * as UI from "@/lib/ui";
@@ -7,9 +7,8 @@ import { Icons } from "@/lib/icons";
 import { brand } from "@/lib/brand";
 import { useNavigate } from "@/lib/navigate";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { Button, Input, Label, Table, THead, TBody, TR, TH, TD, Empty } = UI;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 const { Plus, Calendar, Clock, Filter, Download, AlertCircle, CheckCircle } = Icons;
 
 const CATEGORIES = [
@@ -20,60 +19,324 @@ const CATEGORIES = [
   { id: "c5", name: "Health & Fitness" },
   { id: "c6", name: "Subscriptions" },
   { id: "c7", name: "Travel" },
-  { id: "c8", name: "Gifts" }
+  { id: "c8", name: "Gifts" },
 ];
 
 const EXPENSES = [
-  { id: "e01", category_id: "c2", amount: 695.0, spent_on: "2026-10-01", note: "October rent — flat share" },
+  {
+    id: "e01",
+    category_id: "c2",
+    amount: 695.0,
+    spent_on: "2026-10-01",
+    note: "October rent — flat share",
+  },
   { id: "e02", category_id: "c6", amount: 10.99, spent_on: "2026-10-01", note: "Spotify Duo" },
-  { id: "e03", category_id: "c1", amount: 54.2, spent_on: "2026-10-02", note: "Tesco Metro — weekly shop" },
-  { id: "e04", category_id: "c4", amount: 32.5, spent_on: "2026-10-03", note: "Dinner at Padella with Amara" },
-  { id: "e05", category_id: "c3", amount: 18.4, spent_on: "2026-10-04", note: "TfL contactless — week 40" },
-  { id: "e06", category_id: "c5", amount: 42.0, spent_on: "2026-10-05", note: "Climbing gym membership" },
-  { id: "e07", category_id: "c1", amount: 12.85, spent_on: "2026-10-06", note: "Sainsbury's top-up" },
-  { id: "e08", category_id: "c4", amount: 4.6, spent_on: "2026-10-07", note: "Pret flat white + croissant" },
-  { id: "e09", category_id: "c2", amount: 68.3, spent_on: "2026-10-08", note: "Octopus Energy — September" },
+  {
+    id: "e03",
+    category_id: "c1",
+    amount: 54.2,
+    spent_on: "2026-10-02",
+    note: "Tesco Metro — weekly shop",
+  },
+  {
+    id: "e04",
+    category_id: "c4",
+    amount: 32.5,
+    spent_on: "2026-10-03",
+    note: "Dinner at Padella with Amara",
+  },
+  {
+    id: "e05",
+    category_id: "c3",
+    amount: 18.4,
+    spent_on: "2026-10-04",
+    note: "TfL contactless — week 40",
+  },
+  {
+    id: "e06",
+    category_id: "c5",
+    amount: 42.0,
+    spent_on: "2026-10-05",
+    note: "Climbing gym membership",
+  },
+  {
+    id: "e07",
+    category_id: "c1",
+    amount: 12.85,
+    spent_on: "2026-10-06",
+    note: "Sainsbury's top-up",
+  },
+  {
+    id: "e08",
+    category_id: "c4",
+    amount: 4.6,
+    spent_on: "2026-10-07",
+    note: "Pret flat white + croissant",
+  },
+  {
+    id: "e09",
+    category_id: "c2",
+    amount: 68.3,
+    spent_on: "2026-10-08",
+    note: "Octopus Energy — September",
+  },
   { id: "e10", category_id: "c6", amount: 8.99, spent_on: "2026-10-09", note: "iCloud 2TB" },
-  { id: "e11", category_id: "c7", amount: 186.0, spent_on: "2026-10-10", note: "Eurostar to Brussels" },
-  { id: "e12", category_id: "c1", amount: 61.75, spent_on: "2026-10-11", note: "Tesco — weekly shop" },
-  { id: "e13", category_id: "c3", amount: 22.1, spent_on: "2026-10-12", note: "Thameslink to St Albans" },
-  { id: "e14", category_id: "c4", amount: 19.2, spent_on: "2026-10-13", note: "Lunch — Dishoom King's Cross" },
-  { id: "e15", category_id: "c8", amount: 35.0, spent_on: "2026-10-14", note: "Birthday gift for Dad" },
-  { id: "e16", category_id: "c5", amount: 14.5, spent_on: "2026-10-15", note: "Physio top-up session" },
-  { id: "e17", category_id: "c1", amount: 48.9, spent_on: "2026-10-16", note: "Lidl — weekly shop" },
-  { id: "e18", category_id: "c4", amount: 58.4, spent_on: "2026-10-17", note: "Supper club, Hackney" },
-  { id: "e19", category_id: "c3", amount: 9.8, spent_on: "2026-10-18", note: "Uber home from Dalston" },
-  { id: "e20", category_id: "c2", amount: 41.6, spent_on: "2026-10-19", note: "Thames Water — quarterly" },
-  { id: "e21", category_id: "c6", amount: 12.99, spent_on: "2026-10-20", note: "Figma Professional" },
-  { id: "e22", category_id: "c1", amount: 37.45, spent_on: "2026-10-21", note: "Whole Foods — odds & ends" },
+  {
+    id: "e11",
+    category_id: "c7",
+    amount: 186.0,
+    spent_on: "2026-10-10",
+    note: "Eurostar to Brussels",
+  },
+  {
+    id: "e12",
+    category_id: "c1",
+    amount: 61.75,
+    spent_on: "2026-10-11",
+    note: "Tesco — weekly shop",
+  },
+  {
+    id: "e13",
+    category_id: "c3",
+    amount: 22.1,
+    spent_on: "2026-10-12",
+    note: "Thameslink to St Albans",
+  },
+  {
+    id: "e14",
+    category_id: "c4",
+    amount: 19.2,
+    spent_on: "2026-10-13",
+    note: "Lunch — Dishoom King's Cross",
+  },
+  {
+    id: "e15",
+    category_id: "c8",
+    amount: 35.0,
+    spent_on: "2026-10-14",
+    note: "Birthday gift for Dad",
+  },
+  {
+    id: "e16",
+    category_id: "c5",
+    amount: 14.5,
+    spent_on: "2026-10-15",
+    note: "Physio top-up session",
+  },
+  {
+    id: "e17",
+    category_id: "c1",
+    amount: 48.9,
+    spent_on: "2026-10-16",
+    note: "Lidl — weekly shop",
+  },
+  {
+    id: "e18",
+    category_id: "c4",
+    amount: 58.4,
+    spent_on: "2026-10-17",
+    note: "Supper club, Hackney",
+  },
+  {
+    id: "e19",
+    category_id: "c3",
+    amount: 9.8,
+    spent_on: "2026-10-18",
+    note: "Uber home from Dalston",
+  },
+  {
+    id: "e20",
+    category_id: "c2",
+    amount: 41.6,
+    spent_on: "2026-10-19",
+    note: "Thames Water — quarterly",
+  },
+  {
+    id: "e21",
+    category_id: "c6",
+    amount: 12.99,
+    spent_on: "2026-10-20",
+    note: "Figma Professional",
+  },
+  {
+    id: "e22",
+    category_id: "c1",
+    amount: 37.45,
+    spent_on: "2026-10-21",
+    note: "Whole Foods — odds & ends",
+  },
   { id: "e23", category_id: "c5", amount: 26.0, spent_on: "2026-10-22", note: "Yoga drop-in ×2" },
-  { id: "e24", category_id: "c4", amount: 27.8, spent_on: "2026-10-23", note: "Friday pizza — Yard Sale" },
-  { id: "e25", category_id: "c7", amount: 74.25, spent_on: "2026-10-24", note: "Brussels hotel — second night" },
-  { id: "e26", category_id: "c3", amount: 18.4, spent_on: "2026-10-25", note: "TfL contactless — week 43" },
-  { id: "e27", category_id: "c1", amount: 52.3, spent_on: "2026-10-26", note: "Tesco — weekly shop" },
-  { id: "e28", category_id: "c8", amount: 18.0, spent_on: "2026-10-28", note: "Leaving card & flowers for Priya" },
-  { id: "e29", category_id: "c4", amount: 11.9, spent_on: "2026-10-29", note: "Coffee & pastry, Origin" },
+  {
+    id: "e24",
+    category_id: "c4",
+    amount: 27.8,
+    spent_on: "2026-10-23",
+    note: "Friday pizza — Yard Sale",
+  },
+  {
+    id: "e25",
+    category_id: "c7",
+    amount: 74.25,
+    spent_on: "2026-10-24",
+    note: "Brussels hotel — second night",
+  },
+  {
+    id: "e26",
+    category_id: "c3",
+    amount: 18.4,
+    spent_on: "2026-10-25",
+    note: "TfL contactless — week 43",
+  },
+  {
+    id: "e27",
+    category_id: "c1",
+    amount: 52.3,
+    spent_on: "2026-10-26",
+    note: "Tesco — weekly shop",
+  },
+  {
+    id: "e28",
+    category_id: "c8",
+    amount: 18.0,
+    spent_on: "2026-10-28",
+    note: "Leaving card & flowers for Priya",
+  },
+  {
+    id: "e29",
+    category_id: "c4",
+    amount: 11.9,
+    spent_on: "2026-10-29",
+    note: "Coffee & pastry, Origin",
+  },
   { id: "e30", category_id: "c2", amount: 24.0, spent_on: "2026-10-30", note: "Mobile — SMARTY" },
-  { id: "e31", category_id: "c4", amount: 64.0, spent_on: "2026-10-31", note: "Halloween dinner, Brat" },
-  { id: "e32", category_id: "c2", amount: 695.0, spent_on: "2026-11-01", note: "November rent — flat share" },
+  {
+    id: "e31",
+    category_id: "c4",
+    amount: 64.0,
+    spent_on: "2026-10-31",
+    note: "Halloween dinner, Brat",
+  },
+  {
+    id: "e32",
+    category_id: "c2",
+    amount: 695.0,
+    spent_on: "2026-11-01",
+    note: "November rent — flat share",
+  },
   { id: "e33", category_id: "c6", amount: 10.99, spent_on: "2026-11-01", note: "Spotify Duo" },
-  { id: "e34", category_id: "c1", amount: 59.15, spent_on: "2026-11-02", note: "Tesco — weekly shop" },
-  { id: "e35", category_id: "c3", amount: 18.4, spent_on: "2026-11-03", note: "TfL contactless — week 45" },
-  { id: "e36", category_id: "c5", amount: 42.0, spent_on: "2026-11-04", note: "Climbing gym membership" },
-  { id: "e37", category_id: "c4", amount: 23.6, spent_on: "2026-11-05", note: "Bonfire night takeaway" },
-  { id: "e38", category_id: "c1", amount: 16.4, spent_on: "2026-11-06", note: "Market veg — Broadway" },
-  { id: "e39", category_id: "c7", amount: 218.4, spent_on: "2026-11-07", note: "Flights to Lisbon, March" },
-  { id: "e40", category_id: "c4", amount: 12.75, spent_on: "2026-11-08", note: "Brunch — Blank Street" },
-  { id: "e41", category_id: "c2", amount: 71.05, spent_on: "2026-11-09", note: "Octopus Energy — October" },
+  {
+    id: "e34",
+    category_id: "c1",
+    amount: 59.15,
+    spent_on: "2026-11-02",
+    note: "Tesco — weekly shop",
+  },
+  {
+    id: "e35",
+    category_id: "c3",
+    amount: 18.4,
+    spent_on: "2026-11-03",
+    note: "TfL contactless — week 45",
+  },
+  {
+    id: "e36",
+    category_id: "c5",
+    amount: 42.0,
+    spent_on: "2026-11-04",
+    note: "Climbing gym membership",
+  },
+  {
+    id: "e37",
+    category_id: "c4",
+    amount: 23.6,
+    spent_on: "2026-11-05",
+    note: "Bonfire night takeaway",
+  },
+  {
+    id: "e38",
+    category_id: "c1",
+    amount: 16.4,
+    spent_on: "2026-11-06",
+    note: "Market veg — Broadway",
+  },
+  {
+    id: "e39",
+    category_id: "c7",
+    amount: 218.4,
+    spent_on: "2026-11-07",
+    note: "Flights to Lisbon, March",
+  },
+  {
+    id: "e40",
+    category_id: "c4",
+    amount: 12.75,
+    spent_on: "2026-11-08",
+    note: "Brunch — Blank Street",
+  },
+  {
+    id: "e41",
+    category_id: "c2",
+    amount: 71.05,
+    spent_on: "2026-11-09",
+    note: "Octopus Energy — October",
+  },
   { id: "e42", category_id: "c6", amount: 8.99, spent_on: "2026-11-10", note: "iCloud 2TB" },
-  { id: "e43", category_id: "c1", amount: 44.6, spent_on: "2026-11-11", note: "Sainsbury's — weekly shop" },
-  { id: "e44", category_id: "c3", amount: 32.7, spent_on: "2026-11-12", note: "Trainline — Manchester return" },
-  { id: "e45", category_id: "c4", amount: 46.3, spent_on: "2026-11-13", note: "Dinner with Kofi, Som Saa" },
-  { id: "e46", category_id: "c8", amount: 62.0, spent_on: "2026-11-14", note: "Wedding gift — Jess & Tom" },
-  { id: "e47", category_id: "c5", amount: 11.0, spent_on: "2026-11-15", note: "Swim at London Fields" },
-  { id: "e48", category_id: "c1", amount: 51.05, spent_on: "2026-11-16", note: "Tesco — weekly shop" },
-  { id: "e49", category_id: "c6", amount: 12.99, spent_on: "2026-11-17", note: "Figma Professional" },
-  { id: "e50", category_id: "c3", amount: 8.9, spent_on: "2026-11-18", note: "Santander Cycles day pass" }
+  {
+    id: "e43",
+    category_id: "c1",
+    amount: 44.6,
+    spent_on: "2026-11-11",
+    note: "Sainsbury's — weekly shop",
+  },
+  {
+    id: "e44",
+    category_id: "c3",
+    amount: 32.7,
+    spent_on: "2026-11-12",
+    note: "Trainline — Manchester return",
+  },
+  {
+    id: "e45",
+    category_id: "c4",
+    amount: 46.3,
+    spent_on: "2026-11-13",
+    note: "Dinner with Kofi, Som Saa",
+  },
+  {
+    id: "e46",
+    category_id: "c8",
+    amount: 62.0,
+    spent_on: "2026-11-14",
+    note: "Wedding gift — Jess & Tom",
+  },
+  {
+    id: "e47",
+    category_id: "c5",
+    amount: 11.0,
+    spent_on: "2026-11-15",
+    note: "Swim at London Fields",
+  },
+  {
+    id: "e48",
+    category_id: "c1",
+    amount: 51.05,
+    spent_on: "2026-11-16",
+    note: "Tesco — weekly shop",
+  },
+  {
+    id: "e49",
+    category_id: "c6",
+    amount: 12.99,
+    spent_on: "2026-11-17",
+    note: "Figma Professional",
+  },
+  {
+    id: "e50",
+    category_id: "c3",
+    amount: 8.9,
+    spent_on: "2026-11-18",
+    note: "Santander Cycles day pass",
+  },
 ];
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -150,10 +413,10 @@ export default function Screen() {
 
   const filtered = React.useMemo(
     () =>
-      EXPENSES.filter((e) => e.spent_on >= applied.start && e.spent_on <= applied.end).sort((a, b) =>
-        a.spent_on < b.spent_on ? 1 : -1
+      EXPENSES.filter((e) => e.spent_on >= applied.start && e.spent_on <= applied.end).sort(
+        (a, b) => (a.spent_on < b.spent_on ? 1 : -1),
       ),
-    [applied.start, applied.end]
+    [applied.start, applied.end],
   );
 
   const total = filtered.reduce((s, e) => s + e.amount, 0);
@@ -184,14 +447,18 @@ export default function Screen() {
     const rows = CATEGORIES.map((c) => ({
       id: c.id,
       name: c.name,
-      total: filtered.filter((e) => e.category_id === c.id).reduce((a, e) => a + e.amount, 0)
+      total: filtered.filter((e) => e.category_id === c.id).reduce((a, e) => a + e.amount, 0),
     }))
       .filter((r) => r.total > 0)
       .sort((a, b) => b.total - a.total);
     return rows.map((r, i) => ({
       ...r,
       share: total > 0 ? r.total / total : 0,
-      color: mixHex(brand.primaryColor, brand.accentColor, rows.length > 1 ? i / (rows.length - 1) : 0)
+      color: mixHex(
+        brand.primaryColor,
+        brand.accentColor,
+        rows.length > 1 ? i / (rows.length - 1) : 0,
+      ),
     }));
   }, [filtered, total]);
 
@@ -203,7 +470,7 @@ export default function Screen() {
     backgroundColor: "rgba(255,255,255,0.06)",
     border: "1px solid rgba(255,255,255,0.13)",
     borderRadius: brand.radius,
-    backdropFilter: "blur(16px)"
+    backdropFilter: "blur(16px)",
   };
   const fieldStyle = {
     backgroundColor: "rgba(255,255,255,0.07)",
@@ -211,14 +478,19 @@ export default function Screen() {
     borderRadius: "12px",
     color: "rgba(255,255,255,0.95)",
     height: "44px",
-    fontVariantNumeric: "tabular-nums"
+    fontVariantNumeric: "tabular-nums",
   };
 
   const donutR = 54;
   const donutC = 2 * Math.PI * donutR;
   let acc = 0;
   const segments = byCategory.map((c) => {
-    const seg = { id: c.id, dash: Math.max(c.share * donutC - 2, 0.6), offset: -acc * donutC, color: c.color };
+    const seg = {
+      id: c.id,
+      dash: Math.max(c.share * donutC - 2, 0.6),
+      offset: -acc * donutC,
+      color: c.color,
+    };
     acc += c.share;
     return seg;
   });
@@ -233,7 +505,7 @@ export default function Screen() {
         "--rp-primary": brand.primaryColor,
         "--rp-accent": brand.accentColor,
         "--rp-neutral": brand.neutralColor,
-        "--rp-danger": DANGER
+        "--rp-danger": DANGER,
       }}
     >
       <style>{`
@@ -265,7 +537,8 @@ export default function Screen() {
               Reports
             </h1>
             <p className="mt-2 text-[15px] max-w-[62ch]" style={{ color: brand.neutralColor }}>
-              Your spending over time and by category, for the range you choose. Only your own expenses, in GBP.
+              Your spending over time and by category, for the range you choose. Only your own
+              expenses, in GBP.
             </p>
           </div>
           <div className="lg:col-span-4 flex lg:justify-end">
@@ -280,8 +553,13 @@ export default function Screen() {
                   borderRadius: brand.radius,
                   color: brand.backgroundColor,
                   border: "none",
-                  backgroundImage: "linear-gradient(100deg, " + brand.primaryColor + ", " + brand.accentColor + ")",
-                  boxShadow: "0 18px 48px -14px " + brand.accentColor + "99"
+                  backgroundImage:
+                    "linear-gradient(100deg, " +
+                    brand.primaryColor +
+                    ", " +
+                    brand.accentColor +
+                    ")",
+                  boxShadow: "0 18px 48px -14px " + brand.accentColor + "99",
                 }}
               >
                 <span className="inline-flex items-center gap-2">
@@ -289,9 +567,16 @@ export default function Screen() {
                   {exportState === "working" ? "Preparing CSV…" : "Export CSV"}
                 </span>
               </Button>
-              <p className="mt-2 text-[12.5px] lg:text-right" aria-live="polite" style={{ color: brand.neutralColor }}>
+              <p
+                className="mt-2 text-[12.5px] lg:text-right"
+                aria-live="polite"
+                style={{ color: brand.neutralColor }}
+              >
                 {exportState === "done" ? (
-                  <span className="inline-flex items-center gap-1.5" style={{ color: brand.primaryColor }}>
+                  <span
+                    className="inline-flex items-center gap-1.5"
+                    style={{ color: brand.primaryColor }}
+                  >
                     <CheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
                     expenses_{applied.start}_{applied.end}.csv · {filtered.length} rows
                   </span>
@@ -306,7 +591,13 @@ export default function Screen() {
         </div>
 
         {/* Row 2 — filter bar */}
-        <form data-wf="b-1-0" onSubmit={onApply} className="mt-7 p-4 sm:p-5" style={glass} noValidate>
+        <form
+          data-wf="b-1-0"
+          onSubmit={onApply}
+          className="mt-7 p-4 sm:p-5"
+          style={glass}
+          noValidate
+        >
           <div className="flex flex-col lg:flex-row lg:items-end gap-4">
             <div className="flex items-center gap-2 lg:pb-[11px]">
               <span
@@ -315,14 +606,21 @@ export default function Screen() {
               >
                 <Filter className="h-4 w-4" aria-hidden="true" />
               </span>
-              <span className="text-[13px] font-semibold uppercase tracking-[0.14em]" style={{ color: brand.neutralColor }}>
+              <span
+                className="text-[13px] font-semibold uppercase tracking-[0.14em]"
+                style={{ color: brand.neutralColor }}
+              >
                 Date range
               </span>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               <div className="flex-1 min-w-[170px]">
-                <Label htmlFor="rp-start" className="block mb-1.5 text-[13px] font-medium" style={{ color: "rgba(255,255,255,0.8)" }}>
+                <Label
+                  htmlFor="rp-start"
+                  className="block mb-1.5 text-[13px] font-medium"
+                  style={{ color: "rgba(255,255,255,0.8)" }}
+                >
                   Start date
                 </Label>
                 <Input
@@ -338,7 +636,11 @@ export default function Screen() {
                 />
               </div>
               <div className="flex-1 min-w-[170px]">
-                <Label htmlFor="rp-end" className="block mb-1.5 text-[13px] font-medium" style={{ color: "rgba(255,255,255,0.8)" }}>
+                <Label
+                  htmlFor="rp-end"
+                  className="block mb-1.5 text-[13px] font-medium"
+                  style={{ color: "rgba(255,255,255,0.8)" }}
+                >
                   End date
                 </Label>
                 <Input
@@ -362,7 +664,7 @@ export default function Screen() {
                     borderRadius: "12px",
                     backgroundColor: "rgba(34,211,238,0.14)",
                     border: "1px solid " + brand.primaryColor,
-                    color: brand.primaryColor
+                    color: brand.primaryColor,
                   }}
                 >
                   Apply range
@@ -371,10 +673,16 @@ export default function Screen() {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-[12.5px]" style={{ color: brand.neutralColor }}>
+          <div
+            className="mt-4 flex flex-wrap items-center gap-3 text-[12.5px]"
+            style={{ color: brand.neutralColor }}
+          >
             <span
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-1"
-              style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.12)",
+              }}
             >
               <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
               Showing {fmtLong(applied.start)} – {fmtLong(applied.end)}
@@ -382,7 +690,11 @@ export default function Screen() {
             {dirty && !rangeError ? (
               <span
                 className="rp-fade inline-flex items-center gap-1.5 rounded-full px-3 py-1"
-                style={{ backgroundColor: "rgba(232,121,249,0.12)", border: "1px solid rgba(232,121,249,0.4)", color: "rgba(255,255,255,0.88)" }}
+                style={{
+                  backgroundColor: "rgba(232,121,249,0.12)",
+                  border: "1px solid rgba(232,121,249,0.4)",
+                  color: "rgba(255,255,255,0.88)",
+                }}
               >
                 <Clock className="h-3.5 w-3.5" aria-hidden="true" />
                 Dates changed — select Apply range to refresh the figures
@@ -401,10 +713,14 @@ export default function Screen() {
             style={{
               borderRadius: brand.radius,
               backgroundColor: "rgba(255,95,122,0.10)",
-              border: "1px solid rgba(255,95,122,0.45)"
+              border: "1px solid rgba(255,95,122,0.45)",
             }}
           >
-            <AlertCircle className="h-5 w-5 shrink-0 mt-[1px]" aria-hidden="true" style={{ color: DANGER }} />
+            <AlertCircle
+              className="h-5 w-5 shrink-0 mt-[1px]"
+              aria-hidden="true"
+              style={{ color: DANGER }}
+            />
             <p className="text-[14.5px] leading-6" style={{ color: "rgba(255,255,255,0.94)" }}>
               <strong className="font-semibold">{rangeError}</strong>{" "}
               <span style={{ color: brand.neutralColor }}>
@@ -423,20 +739,31 @@ export default function Screen() {
           />
           <div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
-              <h2 className="text-[19px] font-bold" style={{ fontFamily: brand.fontHeading, color: "#ffffff" }}>
+              <h2
+                className="text-[19px] font-bold"
+                style={{ fontFamily: brand.fontHeading, color: "#ffffff" }}
+              >
                 Spending over time — {rangeLabel}
               </h2>
               <p className="mt-1 text-[13px]" style={{ color: brand.neutralColor }}>
-                {bucketWord} totals · {filtered.length} expense{filtered.length === 1 ? "" : "s"} in range
+                {bucketWord} totals · {filtered.length} expense{filtered.length === 1 ? "" : "s"} in
+                range
               </p>
             </div>
             <div className="text-left sm:text-right">
-              <p className="text-[12px] uppercase tracking-[0.14em]" style={{ color: brand.neutralColor }}>
+              <p
+                className="text-[12px] uppercase tracking-[0.14em]"
+                style={{ color: brand.neutralColor }}
+              >
                 Total in range
               </p>
               <p
                 className="text-[34px] sm:text-[40px] font-extrabold leading-none mt-1"
-                style={{ fontFamily: brand.fontHeading, color: "#ffffff", fontVariantNumeric: "tabular-nums" }}
+                style={{
+                  fontFamily: brand.fontHeading,
+                  color: "#ffffff",
+                  fontVariantNumeric: "tabular-nums",
+                }}
               >
                 {fmtMoney(total)}
               </p>
@@ -444,9 +771,16 @@ export default function Screen() {
           </div>
 
           {loading ? (
-            <div className="relative mt-8 flex items-end gap-2 sm:gap-3 h-[220px]" aria-hidden="true">
+            <div
+              className="relative mt-8 flex items-end gap-2 sm:gap-3 h-[220px]"
+              aria-hidden="true"
+            >
               {[62, 38, 24, 30, 70, 44, 28].map((h, i) => (
-                <div key={i} className="rp-skel flex-1 rounded-t-[10px]" style={{ height: h + "%" }} />
+                <div
+                  key={i}
+                  className="rp-skel flex-1 rounded-t-[10px]"
+                  style={{ height: h + "%" }}
+                />
               ))}
             </div>
           ) : !hasData ? (
@@ -481,7 +815,7 @@ export default function Screen() {
                   className="absolute left-0 right-0 border-t border-dashed"
                   style={{
                     bottom: maxBucket > 0 ? (avgBucket / maxBucket) * 100 + "%" : "0%",
-                    borderColor: "rgba(255,255,255,0.28)"
+                    borderColor: "rgba(255,255,255,0.28)",
                   }}
                 />
                 <div className="absolute inset-0 flex items-end gap-2 sm:gap-3">
@@ -489,10 +823,16 @@ export default function Screen() {
                     const h = maxBucket > 0 ? Math.max((b.total / maxBucket) * 100, 1.5) : 1.5;
                     const isPeak = peak && b.key === peak.key && b.total > 0;
                     return (
-                      <div key={b.key} className="flex-1 flex flex-col justify-end items-center gap-2 h-full">
+                      <div
+                        key={b.key}
+                        className="flex-1 flex flex-col justify-end items-center gap-2 h-full"
+                      >
                         <span
                           className="text-[11.5px] font-semibold"
-                          style={{ color: isPeak ? brand.accentColor : "rgba(255,255,255,0.72)", fontVariantNumeric: "tabular-nums" }}
+                          style={{
+                            color: isPeak ? brand.accentColor : "rgba(255,255,255,0.72)",
+                            fontVariantNumeric: "tabular-nums",
+                          }}
                         >
                           {b.total > 0 ? fmtMoneyShort(b.total) : "—"}
                         </span>
@@ -503,9 +843,15 @@ export default function Screen() {
                             animationDelay: i * 55 + "ms",
                             borderRadius: "10px 10px 5px 5px",
                             backgroundImage:
-                              "linear-gradient(180deg, " + brand.accentColor + ", " + brand.primaryColor + ")",
-                            boxShadow: isPeak ? "0 0 40px -4px " + brand.accentColor : "0 0 26px -8px " + brand.primaryColor,
-                            opacity: b.total > 0 ? 1 : 0.35
+                              "linear-gradient(180deg, " +
+                              brand.accentColor +
+                              ", " +
+                              brand.primaryColor +
+                              ")",
+                            boxShadow: isPeak
+                              ? "0 0 40px -4px " + brand.accentColor
+                              : "0 0 26px -8px " + brand.primaryColor,
+                            opacity: b.total > 0 ? 1 : 0.35,
                           }}
                         />
                       </div>
@@ -525,7 +871,10 @@ export default function Screen() {
                 ))}
               </div>
               <div className="mt-5" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }} />
-              <div className="mt-4 flex flex-wrap gap-x-7 gap-y-2 text-[13px]" style={{ color: brand.neutralColor }}>
+              <div
+                className="mt-4 flex flex-wrap gap-x-7 gap-y-2 text-[13px]"
+                style={{ color: brand.neutralColor }}
+              >
                 <span style={{ fontVariantNumeric: "tabular-nums" }}>
                   {bucketWord} average{" "}
                   <strong className="font-semibold" style={{ color: "rgba(255,255,255,0.92)" }}>
@@ -549,7 +898,10 @@ export default function Screen() {
         {/* Row 5 */}
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
           <section data-wf="b-4-0" className="lg:col-span-6 p-5 sm:p-7" style={glass}>
-            <h2 className="text-[19px] font-bold" style={{ fontFamily: brand.fontHeading, color: "#ffffff" }}>
+            <h2
+              className="text-[19px] font-bold"
+              style={{ fontFamily: brand.fontHeading, color: "#ffffff" }}
+            >
               Spending by category
             </h2>
             <p className="mt-1 text-[13px]" style={{ color: brand.neutralColor }}>
@@ -585,10 +937,19 @@ export default function Screen() {
                         "Share of " +
                         fmtMoney(total) +
                         " by category: " +
-                        byCategory.map((c) => c.name + " " + Math.round(c.share * 100) + " percent").join(", ")
+                        byCategory
+                          .map((c) => c.name + " " + Math.round(c.share * 100) + " percent")
+                          .join(", ")
                       }
                     >
-                      <circle cx="70" cy="70" r={donutR} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="17" />
+                      <circle
+                        cx="70"
+                        cy="70"
+                        r={donutR}
+                        fill="none"
+                        stroke="rgba(255,255,255,0.08)"
+                        strokeWidth="17"
+                      />
                       {segments.map((s) => (
                         <circle
                           key={s.id}
@@ -606,24 +967,36 @@ export default function Screen() {
                       ))}
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[11px] uppercase tracking-[0.14em]" style={{ color: brand.neutralColor }}>
+                      <span
+                        className="text-[11px] uppercase tracking-[0.14em]"
+                        style={{ color: brand.neutralColor }}
+                      >
                         Total
                       </span>
                       <span
                         className="text-[22px] font-extrabold"
-                        style={{ fontFamily: brand.fontHeading, color: "#ffffff", fontVariantNumeric: "tabular-nums" }}
+                        style={{
+                          fontFamily: brand.fontHeading,
+                          color: "#ffffff",
+                          fontVariantNumeric: "tabular-nums",
+                        }}
                       >
                         {fmtMoney(total)}
                       </span>
                     </div>
                   </div>
                 </div>
-                <p className="mt-6 text-[14px] leading-6 text-center px-2" style={{ color: brand.neutralColor }}>
+                <p
+                  className="mt-6 text-[14px] leading-6 text-center px-2"
+                  style={{ color: brand.neutralColor }}
+                >
                   <strong className="font-semibold" style={{ color: "rgba(255,255,255,0.95)" }}>
                     {byCategory[0].name}
                   </strong>{" "}
                   leads at{" "}
-                  <span style={{ fontVariantNumeric: "tabular-nums", color: "rgba(255,255,255,0.95)" }}>
+                  <span
+                    style={{ fontVariantNumeric: "tabular-nums", color: "rgba(255,255,255,0.95)" }}
+                  >
                     {Math.round(byCategory[0].share * 100)}%
                   </span>{" "}
                   of your spend — every category and total is listed alongside.
@@ -633,7 +1006,10 @@ export default function Screen() {
           </section>
 
           <section data-wf="b-4-1" className="lg:col-span-6 p-5 sm:p-7" style={glass}>
-            <h2 className="text-[19px] font-bold" style={{ fontFamily: brand.fontHeading, color: "#ffffff" }}>
+            <h2
+              className="text-[19px] font-bold"
+              style={{ fontFamily: brand.fontHeading, color: "#ffffff" }}
+            >
               Category totals
             </h2>
             <p className="mt-1 text-[13px]" style={{ color: brand.neutralColor }}>
@@ -660,14 +1036,21 @@ export default function Screen() {
               </div>
             ) : (
               <div className="mt-5 overflow-x-auto">
-                <Table className="w-full" style={{ fontVariantNumeric: "tabular-nums", borderCollapse: "collapse" }}>
+                <Table
+                  className="w-full"
+                  style={{ fontVariantNumeric: "tabular-nums", borderCollapse: "collapse" }}
+                >
                   <THead>
                     <TR>
                       <TH
                         data-wf="i-4-1-0"
                         scope="col"
                         className="text-left text-[11.5px] uppercase tracking-[0.14em] font-semibold py-2.5"
-                        style={{ color: brand.neutralColor, borderBottom: "1px solid rgba(255,255,255,0.14)", background: "transparent" }}
+                        style={{
+                          color: brand.neutralColor,
+                          borderBottom: "1px solid rgba(255,255,255,0.14)",
+                          background: "transparent",
+                        }}
                       >
                         Category
                       </TH>
@@ -675,7 +1058,11 @@ export default function Screen() {
                         data-wf="i-4-1-1"
                         scope="col"
                         className="text-right text-[11.5px] uppercase tracking-[0.14em] font-semibold py-2.5"
-                        style={{ color: brand.neutralColor, borderBottom: "1px solid rgba(255,255,255,0.14)", background: "transparent" }}
+                        style={{
+                          color: brand.neutralColor,
+                          borderBottom: "1px solid rgba(255,255,255,0.14)",
+                          background: "transparent",
+                        }}
                       >
                         Total
                       </TH>
@@ -683,7 +1070,11 @@ export default function Screen() {
                         data-wf="i-4-1-2"
                         scope="col"
                         className="text-right text-[11.5px] uppercase tracking-[0.14em] font-semibold py-2.5 w-[34%]"
-                        style={{ color: brand.neutralColor, borderBottom: "1px solid rgba(255,255,255,0.14)", background: "transparent" }}
+                        style={{
+                          color: brand.neutralColor,
+                          borderBottom: "1px solid rgba(255,255,255,0.14)",
+                          background: "transparent",
+                        }}
                       >
                         Share
                       </TH>
@@ -696,7 +1087,13 @@ export default function Screen() {
                         className="rp-row transition-colors"
                         style={{ animationDelay: i * 45 + "ms", background: "transparent" }}
                       >
-                        <TD className="py-3 text-[14.5px]" style={{ color: "rgba(255,255,255,0.94)", borderBottom: "1px solid rgba(255,255,255,0.09)" }}>
+                        <TD
+                          className="py-3 text-[14.5px]"
+                          style={{
+                            color: "rgba(255,255,255,0.94)",
+                            borderBottom: "1px solid rgba(255,255,255,0.09)",
+                          }}
+                        >
                           <span className="inline-flex items-center gap-2.5">
                             <span
                               aria-hidden="true"
@@ -708,11 +1105,18 @@ export default function Screen() {
                         </TD>
                         <TD
                           className="py-3 text-right text-[14.5px] font-semibold"
-                          style={{ color: "#ffffff", borderBottom: "1px solid rgba(255,255,255,0.09)", fontVariantNumeric: "tabular-nums" }}
+                          style={{
+                            color: "#ffffff",
+                            borderBottom: "1px solid rgba(255,255,255,0.09)",
+                            fontVariantNumeric: "tabular-nums",
+                          }}
                         >
                           {fmtMoney(c.total)}
                         </TD>
-                        <TD className="py-3 text-right" style={{ borderBottom: "1px solid rgba(255,255,255,0.09)" }}>
+                        <TD
+                          className="py-3 text-right"
+                          style={{ borderBottom: "1px solid rgba(255,255,255,0.09)" }}
+                        >
                           <span className="flex items-center justify-end gap-2.5">
                             <span
                               aria-hidden="true"
@@ -724,13 +1128,16 @@ export default function Screen() {
                                 style={{
                                   width: Math.max(c.share * 100, 2) + "%",
                                   backgroundColor: c.color,
-                                  transition: "width .5s cubic-bezier(.2,.7,.3,1)"
+                                  transition: "width .5s cubic-bezier(.2,.7,.3,1)",
                                 }}
                               />
                             </span>
                             <span
                               className="text-[13.5px] w-[44px] inline-block"
-                              style={{ color: brand.neutralColor, fontVariantNumeric: "tabular-nums" }}
+                              style={{
+                                color: brand.neutralColor,
+                                fontVariantNumeric: "tabular-nums",
+                              }}
                             >
                               {(c.share * 100).toFixed(1)}%
                             </span>
@@ -739,7 +1146,10 @@ export default function Screen() {
                       </TR>
                     ))}
                     <TR style={{ backgroundColor: "rgba(255,255,255,0.05)" }}>
-                      <TD className="py-3 text-[13px] font-semibold uppercase tracking-[0.12em]" style={{ color: brand.neutralColor }}>
+                      <TD
+                        className="py-3 text-[13px] font-semibold uppercase tracking-[0.12em]"
+                        style={{ color: brand.neutralColor }}
+                      >
                         All categories
                       </TD>
                       <TD
@@ -748,7 +1158,10 @@ export default function Screen() {
                       >
                         {fmtMoney(total)}
                       </TD>
-                      <TD className="py-3 text-right text-[13.5px]" style={{ color: brand.neutralColor, fontVariantNumeric: "tabular-nums" }}>
+                      <TD
+                        className="py-3 text-right text-[13.5px]"
+                        style={{ color: brand.neutralColor, fontVariantNumeric: "tabular-nums" }}
+                      >
                         100.0%
                       </TD>
                     </TR>
@@ -767,12 +1180,14 @@ export default function Screen() {
             style={{
               ...glass,
               backgroundImage:
-                "radial-gradient(520px 180px at 50% 0%, rgba(232,121,249,0.16), rgba(255,255,255,0.02))"
+                "radial-gradient(520px 180px at 50% 0%, rgba(232,121,249,0.16), rgba(255,255,255,0.02))",
             }}
           >
             <Empty
               className="rp-empty"
-              title={"No expenses in " + fmtShort(applied.start) + " – " + fmtLong(applied.end) + "."}
+              title={
+                "No expenses in " + fmtShort(applied.start) + " – " + fmtLong(applied.end) + "."
+              }
               description="Try a wider range or log an expense."
               action={
                 <Button
@@ -783,8 +1198,13 @@ export default function Screen() {
                     borderRadius: brand.radius,
                     border: "none",
                     color: brand.backgroundColor,
-                    backgroundImage: "linear-gradient(100deg, " + brand.primaryColor + ", " + brand.accentColor + ")",
-                    boxShadow: "0 16px 40px -14px " + brand.accentColor + "aa"
+                    backgroundImage:
+                      "linear-gradient(100deg, " +
+                      brand.primaryColor +
+                      ", " +
+                      brand.accentColor +
+                      ")",
+                    boxShadow: "0 16px 40px -14px " + brand.accentColor + "aa",
                   }}
                 >
                   <span className="inline-flex items-center gap-2">
@@ -798,7 +1218,8 @@ export default function Screen() {
         ) : null}
 
         <p className="mt-8 text-[12.5px]" style={{ color: brand.neutralColor }}>
-          Figures are built from your account's expenses only, in GBP. Budgets and alerts aren't part of this version.
+          Figures are built from your account's expenses only, in GBP. Budgets and alerts aren't
+          part of this version.
         </p>
       </div>
     </div>

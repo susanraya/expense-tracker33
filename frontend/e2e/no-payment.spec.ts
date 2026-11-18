@@ -83,15 +83,18 @@ test.describe("[AC-038] free to use, no billing or payment flow", () => {
     await page.goto("/expenses");
     await page.getByRole("button", { name: /add expense/i }).click();
     await expect(page.locator("body")).not.toContainText(PAYMENT_ASK_PATTERN);
-    await page.getByLabel(/amount/i).fill("12.50");
-    const categorySelect = page.getByLabel(/category/i);
-    if (await categorySelect.count()) {
-      await categorySelect.selectOption({ index: 1 });
+    const addExpenseDialog = page.getByRole("dialog");
+    await addExpenseDialog.getByLabel(/amount/i).fill("12.50");
+    // A freshly registered account has no categories yet, so the only option
+    // may be the "Uncategorised" placeholder -- selecting it is optional either way.
+    const categoryOptions = await addExpenseDialog
+      .getByLabel(/category/i)
+      .locator("option")
+      .count();
+    if (categoryOptions > 1) {
+      await addExpenseDialog.getByLabel(/category/i).selectOption({ index: 1 });
     }
-    await page
-      .getByRole("dialog")
-      .getByRole("button", { name: /add expense|save/i })
-      .click();
+    await addExpenseDialog.getByRole("button", { name: /add expense|save/i }).click();
     await expect(page.locator("body")).not.toContainText(PAYMENT_ASK_PATTERN);
 
     // Dashboard and Reports, reached after logging that expense, stay payment-free.
@@ -101,6 +104,29 @@ test.describe("[AC-038] free to use, no billing or payment flow", () => {
     await expect(page.locator("body")).not.toContainText(PAYMENT_ASK_PATTERN);
     await expect(
       page.getByRole("link", { name: /upgrade|subscribe|checkout|billing|pricing|plan|trial/i }),
+    ).toHaveCount(0);
+  });
+
+  test("[AC-038] the Categories screen, used to manage the categories expenses are logged under, never asks for payment details", async ({
+    page,
+  }) => {
+    const email = freshEmail();
+    const password = freshPassword();
+
+    await page.goto("/sign-in");
+    await page.getByRole("tab", { name: "Create account" }).click();
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill(password);
+    await page.getByRole("button", { name: "Create account →" }).click();
+    await page.waitForURL(/\/dashboard$/);
+
+    await page.goto("/categories");
+    await expect(page.locator("body")).not.toContainText(PAYMENT_ASK_PATTERN);
+    await page.getByLabel("New category name").fill(`QA ${crypto.randomUUID().slice(0, 8)}`);
+    await page.getByRole("button", { name: /add category/i }).click();
+    await expect(page.locator("body")).not.toContainText(PAYMENT_ASK_PATTERN);
+    await expect(
+      page.getByRole("button", { name: /upgrade|subscribe|checkout|pay now|go pro/i }),
     ).toHaveCount(0);
   });
 
@@ -185,5 +211,52 @@ test.describe("[AC-038] free to use, no billing or payment flow", () => {
     expect(body).not.toHaveProperty("card");
     expect(body).not.toHaveProperty("billing");
     expect(body).not.toHaveProperty("subscription");
+  });
+
+  test("[AC-038] logging an expense through the API never requires or echoes back a payment field", async ({
+    request,
+  }) => {
+    const email = freshEmail();
+    const password = freshPassword();
+
+    const registerResponse = await request.post(`${API}/auth/register`, {
+      data: { email, password },
+    });
+    expect(registerResponse.status()).toBe(201);
+    const loginResponse = await request.post(`${API}/auth/login`, {
+      data: { email, password },
+    });
+    expect(loginResponse.status()).toBe(200);
+    const { token } = await loginResponse.json();
+    const headers = { Authorization: `Bearer ${token}` };
+
+    // Creating an expense succeeds from amount/date/description alone; a stray
+    // payment-shaped field changes nothing and is never echoed back.
+    const expenseResponse = await request.post(`${API}/expenses`, {
+      headers,
+      data: {
+        amount: 12.5,
+        date: "2026-01-15",
+        description: "Lunch",
+        card_number: "4242 4242 4242 4242",
+        plan: "pro",
+      },
+    });
+
+    expect(expenseResponse.status()).toBe(201);
+    const expenseBody = await expenseResponse.json();
+    expect(expenseBody).not.toHaveProperty("card_number");
+    expect(expenseBody).not.toHaveProperty("plan");
+    expect(expenseBody).not.toHaveProperty("billing");
+
+    // Managing categories -- another everyday part of the app -- carries the
+    // same guarantee: a stray payment field is ignored, not demanded.
+    const categoryResponse = await request.post(`${API}/categories`, {
+      headers,
+      data: { name: "Groceries", card_number: "4242 4242 4242 4242" },
+    });
+    expect(categoryResponse.status()).toBe(201);
+    const categoryBody = await categoryResponse.json();
+    expect(categoryBody).not.toHaveProperty("card_number");
   });
 });

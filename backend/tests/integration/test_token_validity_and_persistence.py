@@ -12,7 +12,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import Category, Expense, UserSession
+from app.auth import hash_token
+from app.models import Category, Expense, User, UserSession
 
 
 def _password() -> str:
@@ -51,6 +52,8 @@ def _endpoints() -> list[tuple[str, str]]:
         ("POST", "/expenses"),
         ("PATCH", f"/expenses/{some_id}"),
         ("DELETE", f"/expenses/{some_id}"),
+        ("GET", "/auth/me"),
+        ("POST", "/account/deactivate"),
     ]
 
 
@@ -59,6 +62,8 @@ def _call(client: TestClient, method: str, path: str, headers: dict[str, str]):
         return client.get(path, headers=headers)
     if method == "DELETE":
         return client.delete(path, headers=headers)
+    if path == "/account/deactivate":
+        return client.post(path, headers=headers)
     body = (
         {"name": "x"}
         if "categories" in path
@@ -71,6 +76,18 @@ def _call(client: TestClient, method: str, path: str, headers: dict[str, str]):
     if method == "POST":
         return client.post(path, json=body, headers=headers)
     return client.patch(path, json=body, headers=headers)
+
+
+def _assert_session_and_user_untouched(db_session: Session, token: str) -> None:
+    """AC-009/AC-037: a rejected request must not have deactivated the
+    account or revoked the session behind the caller's back."""
+    session = db_session.execute(
+        select(UserSession).where(UserSession.token_hash == hash_token(token))
+    ).scalar_one()
+    db_session.refresh(session)
+    user = db_session.get(User, session.user_id)
+    assert user is not None
+    assert user.is_active is True
 
 
 def test_ac037_no_token_returns_401_and_changes_no_row_on_every_endpoint(
@@ -105,6 +122,7 @@ def test_ac037_logged_out_token_returns_401_and_changes_no_row_on_every_endpoint
         response = _call(client, method, path, headers=headers)
         assert response.status_code == 401, f"{method} {path} -> {response.status_code}"
     assert _row_counts(db_session) == before
+    _assert_session_and_user_untouched(db_session, token)
 
 
 def test_ac037_idle_expired_token_returns_401_and_changes_no_row_on_every_endpoint(
@@ -122,6 +140,7 @@ def test_ac037_idle_expired_token_returns_401_and_changes_no_row_on_every_endpoi
         response = _call(client, method, path, headers=headers)
         assert response.status_code == 401, f"{method} {path} -> {response.status_code}"
     assert _row_counts(db_session) == before
+    _assert_session_and_user_untouched(db_session, token)
 
 
 def test_ac036_category_and_expense_created_through_post_survive_a_later_request(
