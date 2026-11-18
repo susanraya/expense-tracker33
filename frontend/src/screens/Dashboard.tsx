@@ -7,7 +7,6 @@ import { Icons } from "@/lib/icons";
 import { brand } from "@/lib/brand";
 import { useNavigate } from "@/lib/navigate";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { Button, Label } = UI;
 
 const CURRENCY = "€";
@@ -42,14 +41,14 @@ const DAYS = [
   { k: "2026-11-15", d: "15 Nov", v: 28.6, n: 1, top: "Transport" },
   { k: "2026-11-16", d: "16 Nov", v: 113.15, n: 4, top: "Household" },
   { k: "2026-11-17", d: "17 Nov", v: 85.0, n: 2, top: "Dining out" },
-  { k: "2026-11-18", d: "18 Nov", v: 21.45, n: 1, top: "Groceries" }
+  { k: "2026-11-18", d: "18 Nov", v: 21.45, n: 1, top: "Groceries" },
 ];
 
 const TOP_CATEGORIES = [
   { id: "i-2-1-0", name: "Groceries", amount: 412.8, count: 14 },
   { id: "i-2-1-1", name: "Rent", amount: 350.0, count: 1 },
   { id: "i-2-1-2", name: "Transport", amount: 186.25, count: 9 },
-  { id: "i-2-1-3", name: "Dining out", amount: 142.0, count: 8 }
+  { id: "i-2-1-3", name: "Dining out", amount: 142.0, count: 8 },
 ];
 
 const SUMMARY = {
@@ -58,11 +57,16 @@ const SUMMARY = {
   count: "37",
   countHint: "6 more than this time last month",
   avg: "42.80",
-  avgHint: "November total ÷ 30 days"
+  avgHint: "November total ÷ 30 days",
 };
 
 const OTHER_TOTAL = 193.45;
-const LAST_LOGGED = { amount: 21.45, category: "Groceries", note: "Lidl run — Parnell St", when: "2 hours ago" };
+const LAST_LOGGED = {
+  amount: 21.45,
+  category: "Groceries",
+  note: "Lidl run — Parnell St",
+  when: "2 hours ago",
+};
 
 export default function Screen() {
   const navigate = useNavigate();
@@ -95,7 +99,7 @@ export default function Screen() {
     "--np-surface-2": "rgba(255,255,255,0.09)",
     "--np-hairline": "rgba(255,255,255,0.13)",
     fontFamily: brand.fontBody,
-    color: "rgba(255,255,255,0.94)"
+    color: "rgba(255,255,255,0.94)",
   };
 
   const glass = {
@@ -103,7 +107,7 @@ export default function Screen() {
     border: "1px solid var(--np-hairline)",
     borderRadius: brand.radius,
     backdropFilter: "blur(16px)",
-    WebkitBackdropFilter: "blur(16px)"
+    WebkitBackdropFilter: "blur(16px)",
   };
 
   const css = `
@@ -142,9 +146,30 @@ export default function Screen() {
   );
 
   const statCards = [
-    { wf: "b-1-0", label: "Total spent this period", value: SUMMARY.total, hint: SUMMARY.totalHint, money: true, focal: true },
-    { wf: "b-1-1", label: "Expenses logged", value: SUMMARY.count, hint: SUMMARY.countHint, money: false, focal: false },
-    { wf: "b-1-2", label: "Average per day", value: SUMMARY.avg, hint: SUMMARY.avgHint, money: true, focal: false }
+    {
+      wf: "b-1-0",
+      label: "Total spent this period",
+      value: SUMMARY.total,
+      hint: SUMMARY.totalHint,
+      money: true,
+      focal: true,
+    },
+    {
+      wf: "b-1-1",
+      label: "Expenses logged",
+      value: SUMMARY.count,
+      hint: SUMMARY.countHint,
+      money: false,
+      focal: false,
+    },
+    {
+      wf: "b-1-2",
+      label: "Average per day",
+      value: SUMMARY.avg,
+      hint: SUMMARY.avgHint,
+      money: true,
+      focal: false,
+    },
   ];
 
   return (
@@ -176,16 +201,22 @@ export default function Screen() {
                 backgroundImage: `linear-gradient(100deg, ${brand.primaryColor}, ${brand.accentColor})`,
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
-                color: "transparent"
+                color: "transparent",
               }}
             >
               November 2026
             </span>
           </h1>
-          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px]" style={{ color: "var(--np-neutral)" }}>
+          <p
+            className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px]"
+            style={{ color: "var(--np-neutral)" }}
+          >
             <span
               className="inline-flex items-center gap-2 rounded-full px-3 py-1"
-              style={{ backgroundColor: "var(--np-surface)", border: "1px solid var(--np-hairline)" }}
+              style={{
+                backgroundColor: "var(--np-surface)",
+                border: "1px solid var(--np-hairline)",
+              }}
             >
               <span
                 className="np-pulse inline-block h-2 w-2 rounded-full"
@@ -211,7 +242,7 @@ export default function Screen() {
               border: "1px solid rgba(255,255,255,0.22)",
               backgroundImage: `linear-gradient(120deg, ${brand.primaryColor}, ${brand.accentColor})`,
               color: brand.backgroundColor,
-              boxShadow: `0 22px 56px -18px ${brand.accentColor}`
+              boxShadow: `0 22px 56px -18px ${brand.accentColor}`,
             }}
           >
             <Icons.Plus className="h-5 w-5" aria-hidden="true" />
@@ -229,7 +260,7 @@ export default function Screen() {
               borderRadius: brand.radius,
               border: "1px solid var(--np-hairline)",
               backgroundColor: "var(--np-surface)",
-              color: "rgba(255,255,255,0.94)"
+              color: "rgba(255,255,255,0.94)",
             }}
           >
             View reports
@@ -240,7 +271,11 @@ export default function Screen() {
         {/* ── Loading ─────────────────────────────────────────── */}
         {status === "loading" && (
           <>
-            <p className="col-span-12 text-[13px]" style={{ color: "var(--np-neutral)" }} aria-live="polite">
+            <p
+              className="col-span-12 text-[13px]"
+              style={{ color: "var(--np-neutral)" }}
+              aria-live="polite"
+            >
               Pulling your November figures from /dashboard/summary…
             </p>
             {[0, 1, 2].map((i) => (
@@ -277,14 +312,25 @@ export default function Screen() {
               style={{ ...glass, borderColor: "rgba(232,121,249,0.4)" }}
             >
               <div className="flex items-start gap-3">
-                <Icons.AlertCircle className="mt-0.5 h-5 w-5 shrink-0" style={{ color: brand.accentColor }} aria-hidden="true" />
+                <Icons.AlertCircle
+                  className="mt-0.5 h-5 w-5 shrink-0"
+                  style={{ color: brand.accentColor }}
+                  aria-hidden="true"
+                />
                 <div>
-                  <h2 className="text-[18px] font-semibold" style={{ fontFamily: brand.fontHeading }}>
+                  <h2
+                    className="text-[18px] font-semibold"
+                    style={{ fontFamily: brand.fontHeading }}
+                  >
                     November's summary didn't come back
                   </h2>
-                  <p className="mt-1 max-w-[62ch] text-[14px] leading-relaxed" style={{ color: "var(--np-neutral)" }}>
-                    The request to <span className="font-mono text-[13px]">/dashboard/summary</span> timed out after 10 seconds.
-                    Nothing was changed — your 37 logged expenses are safe.
+                  <p
+                    className="mt-1 max-w-[62ch] text-[14px] leading-relaxed"
+                    style={{ color: "var(--np-neutral)" }}
+                  >
+                    The request to <span className="font-mono text-[13px]">/dashboard/summary</span>{" "}
+                    timed out after 10 seconds. Nothing was changed — your 37 logged expenses are
+                    safe.
                   </p>
                 </div>
               </div>
@@ -295,15 +341,29 @@ export default function Screen() {
         {/* ── Session expired ─────────────────────────────────── */}
         {status === "expired" && (
           <div className="col-span-12">
-            <div className="np-enter flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between" style={glass}>
+            <div
+              className="np-enter flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between"
+              style={glass}
+            >
               <div className="flex items-start gap-3">
-                <Icons.Clock className="mt-0.5 h-5 w-5 shrink-0" style={{ color: brand.primaryColor }} aria-hidden="true" />
+                <Icons.Clock
+                  className="mt-0.5 h-5 w-5 shrink-0"
+                  style={{ color: brand.primaryColor }}
+                  aria-hidden="true"
+                />
                 <div>
-                  <h2 className="text-[18px] font-semibold" style={{ fontFamily: brand.fontHeading }}>
+                  <h2
+                    className="text-[18px] font-semibold"
+                    style={{ fontFamily: brand.fontHeading }}
+                  >
                     Your session timed out
                   </h2>
-                  <p className="mt-1 max-w-[62ch] text-[14px] leading-relaxed" style={{ color: "var(--np-neutral)" }}>
-                    You were idle for 30 minutes, so we ended the session on this device. Sign in again to see your November figures.
+                  <p
+                    className="mt-1 max-w-[62ch] text-[14px] leading-relaxed"
+                    style={{ color: "var(--np-neutral)" }}
+                  >
+                    You were idle for 30 minutes, so we ended the session on this device. Sign in
+                    again to see your November figures.
                   </p>
                 </div>
               </div>
@@ -324,12 +384,11 @@ export default function Screen() {
                   animationDelay: `${i * 70}ms`,
                   ...(c.focal
                     ? {
-                        backgroundImage:
-                          `radial-gradient(120% 140% at 0% 0%, ${brand.accentColor}26 0%, rgba(255,255,255,0.04) 55%)`,
+                        backgroundImage: `radial-gradient(120% 140% at 0% 0%, ${brand.accentColor}26 0%, rgba(255,255,255,0.04) 55%)`,
                         borderColor: "rgba(255,255,255,0.2)",
-                        boxShadow: `0 30px 70px -40px ${brand.accentColor}`
+                        boxShadow: `0 30px 70px -40px ${brand.accentColor}`,
                       }
-                    : {})
+                    : {}),
                 }}
               >
                 <dt>
@@ -342,13 +401,19 @@ export default function Screen() {
                   style={{ fontFamily: brand.fontHeading }}
                 >
                   {c.money && (
-                    <span className="mr-1 align-top text-[0.5em] font-semibold" style={{ color: "var(--np-neutral)" }}>
+                    <span
+                      className="mr-1 align-top text-[0.5em] font-semibold"
+                      style={{ color: "var(--np-neutral)" }}
+                    >
                       {CURRENCY}
                     </span>
                   )}
                   {c.value}
                 </dd>
-                <dd className="mt-3 text-[13px] leading-relaxed" style={{ color: "var(--np-neutral)" }}>
+                <dd
+                  className="mt-3 text-[13px] leading-relaxed"
+                  style={{ color: "var(--np-neutral)" }}
+                >
                   {c.hint}
                 </dd>
               </div>
@@ -367,7 +432,11 @@ export default function Screen() {
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h2 id="np-chart-title" className="text-[20px] font-semibold tracking-[-0.01em]" style={{ fontFamily: brand.fontHeading }}>
+                  <h2
+                    id="np-chart-title"
+                    className="text-[20px] font-semibold tracking-[-0.01em]"
+                    style={{ fontFamily: brand.fontHeading }}
+                  >
                     Spending over the last 30 days
                   </h2>
                   <p className="mt-1 text-[13px]" style={{ color: "var(--np-neutral)" }}>
@@ -375,13 +444,18 @@ export default function Screen() {
                   </p>
                 </div>
                 <div className="text-right" aria-live="polite">
-                  <p className="tabular-nums text-[26px] font-bold leading-none" style={{ fontFamily: brand.fontHeading }}>
+                  <p
+                    className="tabular-nums text-[26px] font-bold leading-none"
+                    style={{ fontFamily: brand.fontHeading }}
+                  >
                     {CURRENCY}
                     {fmt(day.v)}
                   </p>
                   <p className="mt-1.5 text-[12px]" style={{ color: "var(--np-neutral)" }}>
                     {day.d} 2026 ·{" "}
-                    {day.n === 0 ? "no expenses logged" : `${day.n} ${day.n === 1 ? "expense" : "expenses"} · mostly ${day.top}`}
+                    {day.n === 0
+                      ? "no expenses logged"
+                      : `${day.n} ${day.n === 1 ? "expense" : "expenses"} · mostly ${day.top}`}
                   </p>
                 </div>
               </div>
@@ -409,8 +483,9 @@ export default function Screen() {
                                 : "none",
                             backgroundColor: x.v > 0 ? undefined : "rgba(255,255,255,0.16)",
                             opacity: x.v > 0 ? (isSel ? 1 : 0.6) : 1,
-                            boxShadow: isSel && x.v > 0 ? `0 0 26px 2px ${brand.accentColor}` : "none",
-                            outline: isSel ? "1px solid rgba(255,255,255,0.5)" : "none"
+                            boxShadow:
+                              isSel && x.v > 0 ? `0 0 26px 2px ${brand.accentColor}` : "none",
+                            outline: isSel ? "1px solid rgba(255,255,255,0.5)" : "none",
                           }}
                         />
                       </button>
@@ -419,7 +494,10 @@ export default function Screen() {
                 })}
               </ul>
 
-              <div className="mt-3 flex justify-between tabular-nums text-[11px]" style={{ color: "var(--np-neutral)" }}>
+              <div
+                className="mt-3 flex justify-between tabular-nums text-[11px]"
+                style={{ color: "var(--np-neutral)" }}
+              >
                 <span>20 Oct</span>
                 <span className="hidden sm:inline">27 Oct</span>
                 <span>3 Nov</span>
@@ -428,8 +506,15 @@ export default function Screen() {
               </div>
 
               <div className="mt-5" style={{ borderTop: "1px solid var(--np-hairline)" }} />
-              <p className="mt-4 flex items-center gap-2 text-[13px]" style={{ color: "var(--np-neutral)" }}>
-                <Icons.CheckCircle className="h-4 w-4 shrink-0" style={{ color: brand.primaryColor }} aria-hidden="true" />
+              <p
+                className="mt-4 flex items-center gap-2 text-[13px]"
+                style={{ color: "var(--np-neutral)" }}
+              >
+                <Icons.CheckCircle
+                  className="h-4 w-4 shrink-0"
+                  style={{ color: brand.primaryColor }}
+                  aria-hidden="true"
+                />
                 Peak day {CURRENCY}350.00 on 2 Nov (Rent) · 3 days with no spending
               </p>
             </section>
@@ -440,7 +525,11 @@ export default function Screen() {
               className="np-enter col-span-12 p-6 lg:col-span-4"
               style={{ ...glass, animationDelay: "200ms" }}
             >
-              <h2 id="np-cats-title" className="text-[20px] font-semibold tracking-[-0.01em]" style={{ fontFamily: brand.fontHeading }}>
+              <h2
+                id="np-cats-title"
+                className="text-[20px] font-semibold tracking-[-0.01em]"
+                style={{ fontFamily: brand.fontHeading }}
+              >
                 Top categories
               </h2>
               <p className="mt-1 text-[13px]" style={{ color: "var(--np-neutral)" }}>
@@ -450,7 +539,10 @@ export default function Screen() {
 
               <ul className="mt-5 flex flex-col">
                 {TOP_CATEGORIES.map((c, i) => (
-                  <li key={c.id} style={i > 0 ? { borderTop: "1px solid var(--np-hairline)" } : undefined}>
+                  <li
+                    key={c.id}
+                    style={i > 0 ? { borderTop: "1px solid var(--np-hairline)" } : undefined}
+                  >
                     <button
                       data-wf={c.id}
                       type="button"
@@ -460,7 +552,10 @@ export default function Screen() {
                       <span className="flex items-baseline justify-between gap-3">
                         <span className="flex items-baseline gap-2 truncate">
                           <span className="text-[15px] font-semibold">{c.name}</span>
-                          <span className="tabular-nums text-[12px]" style={{ color: "var(--np-neutral)" }}>
+                          <span
+                            className="tabular-nums text-[12px]"
+                            style={{ color: "var(--np-neutral)" }}
+                          >
                             {c.count} {c.count === 1 ? "expense" : "expenses"}
                           </span>
                         </span>
@@ -469,7 +564,11 @@ export default function Screen() {
                             {CURRENCY}
                             {fmt(c.amount)}
                           </span>
-                          <Icons.ChevronRight className="np-chev h-4 w-4" style={{ color: "var(--np-neutral)" }} aria-hidden="true" />
+                          <Icons.ChevronRight
+                            className="np-chev h-4 w-4"
+                            style={{ color: "var(--np-neutral)" }}
+                            aria-hidden="true"
+                          />
                         </span>
                       </span>
                       <span className="mt-2.5 flex items-center gap-3">
@@ -482,11 +581,14 @@ export default function Screen() {
                             className="block h-full rounded-full"
                             style={{
                               width: `${(c.amount / topCatMax) * 100}%`,
-                              backgroundImage: `linear-gradient(90deg, ${brand.primaryColor}, ${brand.accentColor})`
+                              backgroundImage: `linear-gradient(90deg, ${brand.primaryColor}, ${brand.accentColor})`,
                             }}
                           />
                         </span>
-                        <span className="tabular-nums text-[12px]" style={{ color: "var(--np-neutral)" }}>
+                        <span
+                          className="tabular-nums text-[12px]"
+                          style={{ color: "var(--np-neutral)" }}
+                        >
                           {Math.round((c.amount / periodTotal) * 100)}%
                         </span>
                       </span>
@@ -496,7 +598,10 @@ export default function Screen() {
               </ul>
 
               <div className="mt-4" style={{ borderTop: "1px solid var(--np-hairline)" }} />
-              <p className="mt-4 flex items-center justify-between text-[13px]" style={{ color: "var(--np-neutral)" }}>
+              <p
+                className="mt-4 flex items-center justify-between text-[13px]"
+                style={{ color: "var(--np-neutral)" }}
+              >
                 <span>Everything else (3 categories)</span>
                 <span className="tabular-nums font-semibold">
                   {CURRENCY}
@@ -517,29 +622,42 @@ export default function Screen() {
               ...glass,
               animationDelay: "260ms",
               border: "1px dashed var(--np-hairline)",
-              backgroundColor: "rgba(255,255,255,0.04)"
+              backgroundColor: "rgba(255,255,255,0.04)",
             }}
           >
             {!hasData ? (
               <div className="flex flex-col items-center px-6 py-14 text-center">
-                <span className="relative mb-6 flex h-16 w-16 items-center justify-center" aria-hidden="true">
+                <span
+                  className="relative mb-6 flex h-16 w-16 items-center justify-center"
+                  aria-hidden="true"
+                >
                   <span
                     className="np-pulse absolute inset-0 rounded-full"
                     style={{ backgroundColor: brand.accentColor, filter: "blur(14px)" }}
                   />
                   <span
                     className="relative flex h-16 w-16 items-center justify-center rounded-full"
-                    style={{ border: `1px solid ${brand.primaryColor}`, backgroundColor: "rgba(255,255,255,0.06)" }}
+                    style={{
+                      border: `1px solid ${brand.primaryColor}`,
+                      backgroundColor: "rgba(255,255,255,0.06)",
+                    }}
                   >
                     <Icons.FileText className="h-7 w-7" style={{ color: brand.primaryColor }} />
                   </span>
                 </span>
-                <h2 id="np-empty-title" className="text-[24px] font-bold tracking-[-0.01em]" style={{ fontFamily: brand.fontHeading }}>
+                <h2
+                  id="np-empty-title"
+                  className="text-[24px] font-bold tracking-[-0.01em]"
+                  style={{ fontFamily: brand.fontHeading }}
+                >
                   No expenses yet
                 </h2>
-                <p className="mt-3 max-w-[56ch] text-[15px] leading-relaxed" style={{ color: "var(--np-neutral)" }}>
-                  Add your first expense to see your spending summary — November's total, the 30-day trend and your top
-                  categories all fill in straight away.
+                <p
+                  className="mt-3 max-w-[56ch] text-[15px] leading-relaxed"
+                  style={{ color: "var(--np-neutral)" }}
+                >
+                  Add your first expense to see your spending summary — November's total, the 30-day
+                  trend and your top categories all fill in straight away.
                 </p>
                 <Button
                   type="button"
@@ -549,7 +667,7 @@ export default function Screen() {
                     borderRadius: brand.radius,
                     backgroundImage: `linear-gradient(120deg, ${brand.primaryColor}, ${brand.accentColor})`,
                     color: brand.backgroundColor,
-                    boxShadow: `0 22px 56px -20px ${brand.accentColor}`
+                    boxShadow: `0 22px 56px -20px ${brand.accentColor}`,
                   }}
                 >
                   <Icons.Plus className="h-5 w-5" aria-hidden="true" />
@@ -559,26 +677,39 @@ export default function Screen() {
             ) : (
               <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-3">
-                  <span className="relative mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center" aria-hidden="true">
+                  <span
+                    className="relative mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center"
+                    aria-hidden="true"
+                  >
                     <span
                       className="np-pulse absolute inset-0 rounded-full"
                       style={{ backgroundColor: brand.primaryColor, filter: "blur(10px)" }}
                     />
                     <span
                       className="relative flex h-9 w-9 items-center justify-center rounded-full"
-                      style={{ border: "1px solid var(--np-hairline)", backgroundColor: "rgba(255,255,255,0.06)" }}
+                      style={{
+                        border: "1px solid var(--np-hairline)",
+                        backgroundColor: "rgba(255,255,255,0.06)",
+                      }}
                     >
                       <Icons.Clock className="h-4 w-4" style={{ color: brand.primaryColor }} />
                     </span>
                   </span>
                   <div>
-                    <h2 id="np-empty-title" className="text-[16px] font-semibold" style={{ fontFamily: brand.fontHeading }}>
+                    <h2
+                      id="np-empty-title"
+                      className="text-[16px] font-semibold"
+                      style={{ fontFamily: brand.fontHeading }}
+                    >
                       Last logged {LAST_LOGGED.when}
                     </h2>
-                    <p className="mt-1 max-w-[62ch] text-[14px] leading-relaxed tabular-nums" style={{ color: "var(--np-neutral)" }}>
+                    <p
+                      className="mt-1 max-w-[62ch] text-[14px] leading-relaxed tabular-nums"
+                      style={{ color: "var(--np-neutral)" }}
+                    >
                       {CURRENCY}
-                      {fmt(LAST_LOGGED.amount)} · {LAST_LOGGED.category} · {LAST_LOGGED.note}. Keep November accurate while it's
-                      still fresh.
+                      {fmt(LAST_LOGGED.amount)} · {LAST_LOGGED.category} · {LAST_LOGGED.note}. Keep
+                      November accurate while it's still fresh.
                     </p>
                   </div>
                 </div>
@@ -590,7 +721,7 @@ export default function Screen() {
                     borderRadius: brand.radius,
                     border: "1px solid var(--np-hairline)",
                     backgroundColor: "var(--np-surface)",
-                    color: "rgba(255,255,255,0.94)"
+                    color: "rgba(255,255,255,0.94)",
                   }}
                 >
                   <Icons.Plus className="h-4 w-4" aria-hidden="true" />
