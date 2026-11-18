@@ -12,9 +12,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from app import models  # noqa: F401 -- imported so the tables register before create_all
-from app.database import Base, engine
+from app.database import Base, SessionLocal, engine
+from app.seed import seed_bootstrap_users
 
 
 @asynccontextmanager
@@ -28,7 +30,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     deployment whose `DATABASE_URL` names a server that is not up fails where you can
     read the error, not while pytest collects the files.
     """
+    if engine.dialect.name == "postgresql":
+        # `users.email` is `citext` (case-insensitive) in the approved data model;
+        # the type only exists once this extension is installed in the database.
+        with engine.begin() as conn:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS citext"))
     Base.metadata.create_all(bind=engine)
+    with SessionLocal() as session:
+        seed_bootstrap_users(session)
     yield
 
 
