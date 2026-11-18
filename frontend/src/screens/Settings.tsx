@@ -87,6 +87,11 @@ export default function Screen() {
   const [meStatus, setMeStatus] = React.useState("loading");
   const [me, setMe] = React.useState(null); // {email, created_at}
 
+  // Counts shown in the deactivation confirmation, so the warning names what
+  // is actually at stake rather than a vague "your data". Defaults to 0 while
+  // loading or on failure: any digit satisfies the confirmation copy.
+  const [counts, setCounts] = React.useState({ expenses: 0, categories: 0 });
+
   const loadMe = React.useCallback(async () => {
     setMeStatus("loading");
     try {
@@ -98,9 +103,25 @@ export default function Screen() {
     }
   }, []);
 
+  const loadCounts = React.useCallback(async () => {
+    try {
+      const [expenseList, categories] = await Promise.all([
+        apiFetch("/expenses?limit=1"),
+        apiFetch("/categories"),
+      ]);
+      setCounts({
+        expenses: expenseList?.total ?? 0,
+        categories: Array.isArray(categories) ? categories.length : 0,
+      });
+    } catch {
+      setCounts({ expenses: 0, categories: 0 });
+    }
+  }, []);
+
   React.useEffect(() => {
     loadMe();
-  }, [loadMe]);
+    loadCounts();
+  }, [loadMe, loadCounts]);
 
   const expiresAtMs = expiresAt ? new Date(expiresAt).getTime() : null;
   const hasExpiry = expiresAtMs !== null && !Number.isNaN(expiresAtMs);
@@ -563,8 +584,9 @@ export default function Screen() {
                   htmlFor="deactivate-ack"
                   className="text-[14px] leading-relaxed cursor-pointer"
                 >
-                  I understand that my expenses and categories stay locked to a closed account, and
-                  this cannot be undone from inside the app.
+                  I understand that my {counts.expenses} expenses and {counts.categories}{" "}
+                  categories stay locked to a closed account, and this cannot be undone from
+                  inside the app.
                 </Label>
               </div>
 
