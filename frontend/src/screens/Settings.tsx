@@ -584,9 +584,8 @@ export default function Screen() {
                   htmlFor="deactivate-ack"
                   className="text-[14px] leading-relaxed cursor-pointer"
                 >
-                  I understand that my {counts.expenses} expenses and {counts.categories}{" "}
-                  categories stay locked to a closed account, and this cannot be undone from
-                  inside the app.
+                  I understand that my {counts.expenses} expenses and {counts.categories} categories
+                  stay locked to a closed account, and this cannot be undone from inside the app.
                 </Label>
               </div>
 
