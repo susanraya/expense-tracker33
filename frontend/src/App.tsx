@@ -1,6 +1,7 @@
 import { NavLink, Navigate, Outlet, Route, Routes } from "react-router-dom";
 
 import { Icons } from "@/lib/icons";
+import { AuthProvider, RequireAuth } from "@/lib/auth";
 import SignIn from "@/screens/SignIn";
 import Dashboard from "@/screens/Dashboard";
 import Expenses from "@/screens/Expenses";
@@ -63,16 +64,24 @@ function AppShellLayout() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route element={<AppShellLayout />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/expenses" element={<Expenses />} />
-        <Route path="/categories" element={<Categories />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/settings" element={<Settings />} />
-      </Route>
-      <Route path="/sign-in" element={<SignIn />} />
-      <Route path="*" element={<Navigate to="/sign-in" replace />} />
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        <Route
+          element={
+            <RequireAuth>
+              <AppShellLayout />
+            </RequireAuth>
+          }
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/expenses" element={<Expenses />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/settings" element={<Settings />} />
+        </Route>
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="*" element={<Navigate to="/sign-in" replace />} />
+      </Routes>
+    </AuthProvider>
   );
 }

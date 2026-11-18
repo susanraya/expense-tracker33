@@ -3,6 +3,9 @@ target-version = "py312"
 
 [lint]
 select = ["E", "F", "I", "B", "UP"]
+# FastAPI's own pattern for dependency injection is `Depends(...)` as a parameter
+# default; B008 otherwise flags every endpoint and every dependency in the app.
+ignore = ["B008"]
 
 [format]
 quote-style = "double"

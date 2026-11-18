@@ -6,16 +6,12 @@ import * as UI from "@/lib/ui";
 import { Icons } from "@/lib/icons";
 import { brand } from "@/lib/brand";
 import { useNavigate } from "@/lib/navigate";
+import { apiFetch, ApiError } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { Switch } = UI;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { Check, Clock, ArrowLeft, ArrowRight, AlertCircle, CheckCircle } = Icons;
+const { Check, Clock, ArrowRight, AlertCircle, CheckCircle } = Icons;
 
 const PRODUCT = "expense tracker";
-
-// The one account that exists in this prototype's seed data.
-const REGISTERED_EMAIL = "rae.mcallister@fastmail.com";
 
 const TABS = [
   { key: "signin", label: "Sign in", wf: "i-1-0-0" },
@@ -23,8 +19,10 @@ const TABS = [
 ];
 
 const RULE_TEXT = "Passwords must be at least 10 characters with a letter and a number.";
-const SIGNIN_FAIL_TEXT =
-  "Email or password is incorrect. Passwords must be at least 10 characters with a letter and a number.";
+// AC-005: the server's own wording ("Invalid email or password") never reaches the UI --
+// this fixed string is shown for every sign-in failure, so it cannot hint whether the
+// email is registered.
+const SIGNIN_FAIL_TEXT = "Email or password is incorrect";
 
 const mix = (colour, percent) => `color-mix(in srgb, ${colour} ${percent}%, transparent)`;
 
@@ -45,18 +43,30 @@ const CSS = `
 const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 const passwordOk = (value) => value.length >= 10 && /[A-Za-z]/.test(value) && /[0-9]/.test(value);
 
+// 422 bodies look like {detail: [{loc, msg}, ...]}; fall back to the client-side
+// rule text when the server sends nothing we can read.
+function describeValidationError(body) {
+  const detail = body && body.detail;
+  if (Array.isArray(detail) && detail.length) {
+    const text = detail
+      .map((item) => (item && typeof item.msg === "string" ? item.msg : null))
+      .filter(Boolean)
+      .join(" ");
+    if (text) return text;
+  }
+  if (typeof detail === "string" && detail) return detail;
+  return RULE_TEXT;
+}
+
 export default function Screen() {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
   const [tab, setTab] = React.useState("signin");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [phase, setPhase] = React.useState("idle"); // idle | working | error | success
   const [message, setMessage] = React.useState("");
   const [badField, setBadField] = React.useState(null); // "email" | "password" | null
-
-  const timers = React.useRef([]);
-  React.useEffect(() => () => timers.current.forEach(clearTimeout), []);
-  const later = (fn, ms) => timers.current.push(setTimeout(fn, ms));
 
   const glass = {
     backgroundColor: "rgba(255,255,255,0.07)",
@@ -73,7 +83,9 @@ export default function Screen() {
   const fieldStyle = (name) => ({
     ...glass,
     borderColor:
-      phase === "error" && badField === name ? mix(brand.accentColor, 75) : "rgba(255,255,255,0.14)",
+      phase === "error" && badField === name
+        ? mix(brand.accentColor, 75)
+        : "rgba(255,255,255,0.14)",
   });
 
   const switchTab = (key) => {
@@ -90,45 +102,72 @@ export default function Screen() {
     setBadField(field || null);
   };
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
     if (working || done) return;
 
     const trimmed = email.trim();
 
     if (!trimmed) return fail("Enter the email you track your expenses with.", "email");
-    if (!isEmail(trimmed)) return fail("That email doesn't look right — try the form name@example.com.", "email");
-    if (!password) return fail(registering ? "Choose a password. " + RULE_TEXT : "Enter your password.", "password");
+    if (!isEmail(trimmed))
+      return fail("That email doesn't look right — try the form name@example.com.", "email");
+    if (!password)
+      return fail(
+        registering ? "Choose a password. " + RULE_TEXT : "Enter your password.",
+        "password",
+      );
     if (registering && !passwordOk(password)) return fail(RULE_TEXT, "password");
 
     setPhase("working");
     setMessage(registering ? "Setting up your private ledger…" : "Checking your details…");
     setBadField(null);
 
-    later(() => {
+    try {
       if (registering) {
-        if (trimmed.toLowerCase() === REGISTERED_EMAIL) {
-          return fail("An account already exists for that email. Switch to Sign in to get back to it.", "email");
-        }
-        setPhase("success");
-        setMessage("Account created. Opening your dashboard…");
-        later(() => navigate("dashboard"), 700);
-        return;
+        await apiFetch("/auth/register", {
+          method: "POST",
+          body: JSON.stringify({ email: trimmed, password }),
+        });
       }
-
-      const ok = trimmed.toLowerCase() === REGISTERED_EMAIL && passwordOk(password);
-      if (!ok) return fail(SIGNIN_FAIL_TEXT, "password");
-
+      const result = await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email: trimmed, password }),
+      });
+      signIn(result.token);
       setPhase("success");
-      setMessage("Signed in. Opening your dashboard…");
-      later(() => navigate("dashboard"), 700);
-    }, 650);
+      setMessage(
+        registering
+          ? "Account created. Opening your dashboard…"
+          : "Signed in. Opening your dashboard…",
+      );
+      navigate("dashboard");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (registering && err.status === 409) {
+          return fail(
+            "An account already exists for that email. Switch to Sign in to get back to it.",
+            "email",
+          );
+        }
+        if (registering && err.status === 422) {
+          return fail(describeValidationError(err.body), "password");
+        }
+        if (!registering && err.status === 401) {
+          return fail(SIGNIN_FAIL_TEXT, "password");
+        }
+      }
+      return fail("Something went wrong on our end. Please try again.", null);
+    }
   };
 
   return (
     <div
       className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-12 text-white"
-      style={{ fontFamily: brand.fontBody, backgroundColor: brand.backgroundColor, "--np-accent": brand.accentColor }}
+      style={{
+        fontFamily: brand.fontBody,
+        backgroundColor: brand.backgroundColor,
+        "--np-accent": brand.accentColor,
+      }}
     >
       <style>{CSS}</style>
 
@@ -143,7 +182,10 @@ export default function Screen() {
         style={{ backgroundColor: mix(brand.accentColor, 60) }}
       />
 
-      <p className="absolute left-6 top-7 text-lg font-bold sm:left-10 sm:top-8" style={{ fontFamily: brand.fontHeading }}>
+      <p
+        className="absolute left-6 top-7 text-lg font-bold sm:left-10 sm:top-8"
+        style={{ fontFamily: brand.fontHeading }}
+      >
         {PRODUCT}
       </p>
 
@@ -155,7 +197,11 @@ export default function Screen() {
           className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
           style={{ backgroundColor: mix(brand.accentColor, 25), color: "#fff" }}
         >
-          <span aria-hidden="true" className="np-dot inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: brand.accentColor }} />
+          <span
+            aria-hidden="true"
+            className="np-dot inline-block h-1.5 w-1.5 rounded-full"
+            style={{ backgroundColor: brand.accentColor }}
+          />
           Private by default
         </p>
 
@@ -203,8 +249,17 @@ export default function Screen() {
                 className="np-focus np-move flex min-h-[44px] items-center justify-center gap-2 px-3 text-sm font-bold transition-colors"
                 style={
                   active
-                    ? { background: gradient, color: brand.backgroundColor, borderRadius: brand.radius, boxShadow: glow }
-                    : { color: "rgba(255,255,255,0.72)", borderRadius: brand.radius, backgroundColor: "transparent" }
+                    ? {
+                        background: gradient,
+                        color: brand.backgroundColor,
+                        borderRadius: brand.radius,
+                        boxShadow: glow,
+                      }
+                    : {
+                        color: "rgba(255,255,255,0.72)",
+                        borderRadius: brand.radius,
+                        backgroundColor: "transparent",
+                      }
                 }
               >
                 {active ? <Check aria-hidden="true" className="h-4 w-4" /> : null}
@@ -218,7 +273,10 @@ export default function Screen() {
           {/* Row 3 — form */}
           <form data-wf="b-2-0" className="mt-6 space-y-5" onSubmit={onSubmit} noValidate>
             <div className="space-y-2">
-              <label htmlFor="auth-email" className="block text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+              <label
+                htmlFor="auth-email"
+                className="block text-xs font-bold uppercase tracking-[0.12em] text-white/60"
+              >
                 Email
               </label>
               <input
@@ -232,7 +290,7 @@ export default function Screen() {
                 disabled={working || done}
                 aria-invalid={phase === "error" && badField === "email"}
                 aria-describedby="auth-feedback"
-                placeholder="rae.mcallister@fastmail.com"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="np-focus h-12 w-full px-4 text-sm text-white outline-none placeholder:text-white/35 disabled:opacity-60"
@@ -241,7 +299,10 @@ export default function Screen() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="auth-password" className="block text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+              <label
+                htmlFor="auth-password"
+                className="block text-xs font-bold uppercase tracking-[0.12em] text-white/60"
+              >
                 Password
               </label>
               <input
@@ -278,9 +339,21 @@ export default function Screen() {
             >
               {working ? (
                 <span className="inline-flex items-center justify-center gap-2">
-                  <span aria-hidden="true" className="np-dot inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: brand.backgroundColor }} />
-                  <span aria-hidden="true" className="np-dot np-dot-2 inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: brand.backgroundColor }} />
-                  <span aria-hidden="true" className="np-dot np-dot-3 inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: brand.backgroundColor }} />
+                  <span
+                    aria-hidden="true"
+                    className="np-dot inline-block h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: brand.backgroundColor }}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="np-dot np-dot-2 inline-block h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: brand.backgroundColor }}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="np-dot np-dot-3 inline-block h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: brand.backgroundColor }}
+                  />
                   {registering ? "Creating your account" : "Signing you in"}
                 </span>
               ) : done ? (
@@ -313,17 +386,27 @@ export default function Screen() {
               className="np-rise flex gap-3 p-4 text-sm font-semibold leading-relaxed"
               style={{
                 ...glass,
-                borderColor: phase === "error" ? mix(brand.accentColor, 60) : mix(brand.primaryColor, 55),
-                boxShadow: phase === "error" ? `0 20px 60px -16px ${mix(brand.accentColor, 65)}` : glow,
+                borderColor:
+                  phase === "error" ? mix(brand.accentColor, 60) : mix(brand.primaryColor, 55),
+                boxShadow:
+                  phase === "error" ? `0 20px 60px -16px ${mix(brand.accentColor, 65)}` : glow,
                 color: phase === "error" ? brand.accentColor : "#fff",
               }}
             >
               {phase === "error" ? (
                 <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
               ) : phase === "success" ? (
-                <CheckCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" style={{ color: brand.primaryColor }} />
+                <CheckCircle
+                  aria-hidden="true"
+                  className="mt-0.5 h-4 w-4 shrink-0"
+                  style={{ color: brand.primaryColor }}
+                />
               ) : (
-                <Clock aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" style={{ color: brand.primaryColor }} />
+                <Clock
+                  aria-hidden="true"
+                  className="mt-0.5 h-4 w-4 shrink-0"
+                  style={{ color: brand.primaryColor }}
+                />
               )}
               <span>
                 <span className="sr-only">{phase === "error" ? "Error: " : ""}</span>
@@ -335,7 +418,8 @@ export default function Screen() {
 
         {/* Row 6 — reassurance */}
         <p data-wf="b-5-0" className="mt-6 text-center text-xs leading-relaxed text-white/55">
-          Free to use. Your expenses are private to your account and we never ask for payment details.
+          Free to use. Your expenses are private to your account and we never ask for payment
+          details.
         </p>
       </main>
     </div>
