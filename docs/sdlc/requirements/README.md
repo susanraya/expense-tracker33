@@ -5,127 +5,113 @@
 <!-- sdlc:auto:start narrative -->
 ## Summary
 
-### REQ-TECH-STACK · approved · source: requirements:v1
+### REQ-TECH-STACK · approved · source: requirements:technology stack
 
-Technology stack approved by the product owner for the expense tracker; must be designed against exactly these choices.
+Technology stack approved by the product owner for this project; design must use exactly these, no substitutions.
 
-Backend: FastAPI 0.115 -- authenticates users, stores private expenses/categories, runs date-range queries for charts and CSV export, with automatic request validation for amounts/dates/categories. Cloud: AWS -- dependable hosting, automatic backups, managed database and email services, room to scale cheaply. Database: PostgreSQL 16 -- relational store for expenses/categories/accounts needing per-user isolation and accurate-to-the-cent figures, efficient date-range grouping and per-category totals, no-cost default. Frontend: React 19 -- responsive web app with interactive, live-redrawing charts (spending over time and by category) as date-range filters change, smooth on desktop and mobile without a separate mobile app.
+Backend: FastAPI 0.115 -- lean Python framework with automatic request validation to keep amounts, dates and categories clean. Cloud: AWS -- managed database/email services, backups, room to grow from a handful of users without re-platforming. Database: PostgreSQL 16 -- relational store for strictly per-user data, efficient date-range grouping and per-category totals, no-cost default. Frontend: React 19 -- responsive SPA handling live-redrawing interactive reports/charts on desktop and mobile.
 
-### REQ-SERVICES · approved · source: requirements:v1
+### REQ-SERVICES · approved · source: requirements:capabilities in scope
 
-Capabilities/services included in the build scope for this delivery.
+Capabilities the product must deliver at MVP scope.
 
-In-scope capabilities: Authentication; Basic Project Structure; Dashboard; CRUD Screens; REST APIs; Database Integration; Basic Documentation.
+Authentication; Basic Project Structure; Dashboard; CRUD Screens; REST APIs; Database Integration; Basic Documentation.
 
-### REQ-SCOPE · approved · source: requirements:v1
+### REQ-SCOPE · approved · source: requirements:delivery scope / out of scope
 
-Delivery scope is lightweight; several features are explicitly excluded from this version.
+Defines what is in and out of scope for this lightweight, version-1 delivery.
 
-Delivery scope: lightweight. Out of scope -- do not design or build: automatic bank/card transaction import; multiple currencies, recurring expenses, and receipt photo attachments; email (the suggested SMTP server was removed from the stack, so email verification and emailed password resets are also excluded).
+Delivery scope: lightweight. Requirements version: 1. In scope: Authentication, Basic Project Structure, Dashboard, CRUD Screens, REST APIs, Database Integration, Basic Documentation. Out of scope -- not to be designed or built: automatic bank/card transaction import; multiple currencies; recurring expenses; receipt photo attachments; email (the suggested SMTP server was removed from the stack, so no email verification or emailed password resets).
 
 ### REQ-FEAT-SIGNIN · approved · source: requirements:Sign-in & accounts
 
-Requirements covering account registration, sign-in, session handling, and account deactivation.
+Account creation, sign-in/out, session expiry and deactivation requirements.
 
-- Register a new account: create a private account with email + password meeting stated requirements; rejected with a clear message if email already has an account or email/password is invalid.
-- Sign in to my account: sign in with email and password to reach the dashboard; wrong email or password fails with a generic message.
-- Sign out and session expiry: signing out ends the session immediately; a session inactive beyond the configured period is treated as expired, requiring re-sign-in before any protected action.
-- Deactivate my account: a signed-in user can confirm deactivation; active sessions end and the account can no longer sign in.
+Register a new account: create a private account with email and password meeting stated requirements; rejected with clear message if email already registered or email/password invalid. Sign in: email+password sign-in takes user to dashboard; wrong email or password gives a generic failure message. Sign out and session expiry: user can sign out ending session immediately; a session inactive beyond the configured period is treated as expired, requiring re-sign-in before any protected action. Deactivate account: a signed-in user can confirm deactivation, which ends active sessions and blocks further sign-in with that account.
 
 ### REQ-FEAT-EXPENSES · approved · source: requirements:Logging expenses
 
-Requirements covering manual creation, viewing, editing, and deletion of expenses.
+Manual recording, viewing, editing and deleting of expenses.
 
-- Add an expense: record a positive amount, date, one of the user's categories, and optional note, saved in the single supported currency; required fields and positive amount enforced; no fields for recurring schedules, receipts, or currency.
-- View my expenses: list of the user's expenses (amount, date, category, note), most recent first; empty-state message when there are none.
-- Edit an expense: change amount, date, category or note; valid changes saved and reflected in the list; invalid values rejected with a validation message.
-- Delete an expense: delete after confirmation; it no longer appears in any lists or reports.
+Add an expense: positive amount, date, one of the user's categories, optional note, saved in the single supported currency; required fields and positive amount enforced; no fields for recurring schedules, receipts or currency. View expenses: list shows amount, date, category, note, most recent first; empty state invites adding the first expense. Edit an expense: change amount, date, category or note; valid changes saved and reflected in the list, invalid values rejected with a validation message. Delete an expense: delete after confirmation; removed expense no longer appears in lists or reports.
 
 ### REQ-FEAT-CATEGORIES · approved · source: requirements:Managing categories
 
-Requirements covering creation, renaming, and deletion of expense categories.
+Creating, renaming and deleting personal expense categories.
 
-- Create a category: name must be non-blank and unique within the account; becomes available for expenses immediately; blank/duplicate names rejected.
-- Rename a category: rename to a valid, unique name; expenses assigned to it reflect the updated name.
-- Delete a category: allowed only if it has no expenses assigned; if it has expenses, deletion is prevented with a clear explanation of how to proceed so no expense is left uncategorized.
+Create a category: non-blank, unique-per-account name; becomes available for expenses; blank/duplicate names rejected. Rename a category: rename to a valid unique name; expenses assigned to it reflect the new name. Delete a category: allowed only if it has no expenses assigned; otherwise deletion is prevented with a clear explanation of how to proceed so no expense is left without a category.
 
 ### REQ-FEAT-DASHBOARD · approved · source: requirements:Dashboard
 
-Requirements covering the spending summary dashboard and its quick-action shortcuts.
+Dashboard spending summary and quick-action shortcuts.
 
-- See a spending summary: dashboard shows summary figures from the user's own data (e.g., total spending for the current period, top-category breakdown); helpful empty state when there are no expenses.
-- Quick access to key actions: dashboard provides shortcuts to add an expense and to open the reports screen.
+See a spending summary: dashboard shows summary figures computed from the user's own data, e.g. total spending for the current period and top categories; empty state invites adding the first expense when there is no data. Quick access to key actions: shortcuts from the dashboard to add an expense or open the reports screen.
 
 ### REQ-FEAT-REPORTS · approved · source: requirements:Reports & export
 
-Requirements covering spending charts, category breakdowns, date-range filtering, and CSV export.
+Spending charts, date-range filtering and CSV export.
 
-- View spending over time: time-based chart of total spending built only from the user's own expenses; clear empty state when the selected range has none.
-- View spending by category: breakdown of spending grouped by category for the selected range, as chart and/or totals.
-- Filter reports by date range: selecting start/end dates updates charts and breakdowns to that range; a start date later than the end date is rejected with a validation message.
-- Export my data as CSV: export expenses (optionally within the selected date range) as a CSV with amount, date, category and note columns, containing only the user's own expenses.
+View spending over time: time-based chart of total spending built only from the user's own expenses; clear empty state when the selected range has none. View spending by category: breakdown of spending grouped by category for the selected range as chart and/or totals. Filter reports by date range: start/end date selection updates charts and breakdowns; a start date later than the end date is rejected with a validation message. Export data as CSV: export expenses, optionally within the selected date range, as a CSV with amount, date, category and note columns, containing only the user's own expenses.
 
 ### REQ-FEAT-PLATFORM · approved · source: requirements:Platform & documentation
 
-Requirements covering the no-cost model, REST API backbone, and baseline documentation.
+Free-to-use model, REST API backing, and basic documentation.
 
-- Free to use: users register, log expenses, and view reports without ever being asked for payment details; no billing or subscription flow.
-- Core data over REST APIs: expenses, categories and account data are served through REST API endpoints that persist to and read from the database, scoped to the authenticated user.
-- Setup and usage documentation: basic documentation covers how to set up and run the app and summarizes core features: accounts, expenses, categories, reports and export.
+Free to use: register, log expenses and view reports without ever being asked for payment details; no billing or subscription flow. Core data over REST APIs: expenses, categories and account data served through REST API endpoints that persist to and read from the database, scoped to the authenticated user. Setup and usage documentation: basic documentation covers how to set up and run the app and summarises core features -- accounts, expenses, categories, reports and export.
 
-### NFR-001 · approved · source: requirements:NFR-001
+### REQ-NFR-001 · approved · source: requirements:NFR-001
 
-Privacy: each user only ever sees and changes their own expenses and categories.
+Data visible only to its owner (privacy).
 
-Applies whether viewing screens or requesting data through the API; another user's data must never be visible or editable.
+Each signed-in user only ever sees and changes their own expenses and categories, never another user's data, whether through screens or the API.
 
-### NFR-002 · approved · source: requirements:NFR-002
+### REQ-NFR-002 · approved · source: requirements:NFR-002
 
-Privacy: sign-in failures must not reveal whether an account exists for a given email.
+Sign-in failures do not reveal whether an account exists (privacy).
 
-On sign-in failure, the user sees only a generic message, regardless of whether the email is registered.
+When sign-in fails, the user sees a generic message that does not reveal whether an account exists for that email.
 
-### NFR-003 · approved · source: requirements:NFR-003
+### REQ-NFR-003 · approved · source: requirements:NFR-003
 
-Security: passwords are stored only as hashes, never in plain text.
+Passwords stored only as hashes (security).
 
-Applies to all stored user passwords.
+User passwords are stored only as a hash and never in plain text.
 
-### NFR-004 · approved · source: requirements:NFR-004
+### REQ-NFR-004 · approved · source: requirements:NFR-004
 
-Security: sessions end on sign-out or account deactivation, and expire after a configured inactivity period.
+Sessions expire and can be ended (security).
 
-After expiry, the user must sign in again to access any data.
+A session ends on sign-out and on account deactivation, and expires after a configured period of inactivity; after that the user must sign in again to access any data.
 
-### NFR-005 · approved · source: requirements:NFR-005
+### REQ-NFR-005 · approved · source: requirements:NFR-005
 
-Security: protected screens and APIs require a valid authenticated session.
+Protected screens and APIs require sign-in (security).
 
-Any unauthenticated attempt to reach a protected screen or API is denied, returns or changes no data, and the user is directed to sign in.
+Any attempt to reach a protected screen or API endpoint without a valid authenticated session is denied, returning or changing no data, and the user is directed to sign in.
 
-### NFR-006 · approved · source: requirements:NFR-006
+### REQ-NFR-006 · approved · source: requirements:NFR-006
 
-Security: documentation must show secrets only as angle-bracket placeholders, never real-looking values.
+Secrets shown only as placeholders in documentation (security).
 
-Applies to configuration examples such as database connection strings or passwords.
+Configuration examples in the documentation show any secret, such as a database connection string or password, only as a placeholder in angle brackets (e.g. <database-password>) and never as a real-looking value.
 
-### NFR-007 · approved · source: requirements:NFR-007
+### REQ-NFR-007 · approved · source: requirements:NFR-007
 
-Compatibility: the app must run as a responsive web app in modern desktop and mobile browsers.
+Works on desktop and mobile browsers (compatibility).
 
-Layout adapts so all core actions remain usable on a small screen.
+The app runs as a responsive web application in modern desktop and mobile browsers, with the layout adapting so all core actions remain usable on a small screen.
 
-### NFR-008 · approved · source: requirements:NFR-008
+### REQ-NFR-008 · approved · source: requirements:NFR-008
 
-Usability: when there is no data, the expense list, dashboard and reports show a clear empty state rather than broken or misleading widgets.
+Helpful empty states instead of broken widgets (usability).
 
-Empty states should invite the user to add data.
+When there is no data to show, the expense list, dashboard and reports display a clear empty state inviting the user to add data, rather than showing empty/broken widgets or misleading charts.
 
-### NFR-009 · approved · source: requirements:NFR-009
+### REQ-NFR-009 · approved · source: requirements:NFR-009
 
-Accepted risk: no email-based account recovery in this version, since no email delivery is available.
+Accepted risk: no email-based account recovery in this version (security).
 
-Flows depending on sending email (e.g., email verification, emailed password resets) are intentionally excluded from v1; users cannot recover a forgotten password by email.
+Because no email delivery is available in this version, flows depending on sending email -- such as email verification and emailed password resets -- are intentionally left out; users cannot recover a forgotten password by email. This is an accepted risk.
 <!-- sdlc:auto:end narrative -->
 
 <!-- sdlc:auto:start summary -->

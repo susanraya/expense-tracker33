@@ -5,123 +5,125 @@
 <!-- sdlc:auto:start narrative -->
 ## Overview
 
-### ARCH-001 · approved · source: architecture:summary
+### ARCH-SUMMARY · approved · source: architecture:summary
 
-Overall approved architecture: a React 19 SPA (own origin) calling a FastAPI 0.115 REST API (separate origin), backed by PostgreSQL 16, hosted on AWS. Users register/sign in with email+password and an opaque bearer session token; all expense/category data and reports are strictly scoped to the authenticated owner.
+Overall architecture: React SPA talking to a FastAPI REST API backed by PostgreSQL, hosted on AWS.
 
-Approved, version 1. Scope included: registration/sign-in via server-side sessions with opaque bearer token; private per-user expense and category CRUD; dashboard summary; reports (spending-over-time and by-category) with date-range filtering; CSV export of expenses. Explicitly out of scope: email delivery, multi-currency, recurring expenses, receipt attachments, bank import, billing.
+A lightweight personal expense tracker delivered as a React 19 SPA (own origin) calling a FastAPI 0.115 REST API (separate origin), backed by PostgreSQL 16, hosted on AWS. Users register with email/password, sign in via server-side sessions identified by an opaque bearer token, and privately manage their own expenses and categories. Dashboard and reports compute per-user totals, spending-over-time and by-category breakdowns with date-range filtering; expenses can be exported to CSV. All data is strictly scoped to the authenticated owner. Email delivery, multi-currency, recurring expenses, receipt attachments, bank import and billing are excluded, per the out-of-scope list.
 
-### ARCH-002 · approved · source: architecture:components:web_spa
+**Related:** REQ-TECH-STACK, REQ-SCOPE
 
-React 19 single-page application providing the responsive browser UI for the whole app.
+### ARCH-COMP-WEBSPA · approved · source: architecture:components:web_spa
 
-Responsive browser UI covering: registration, sign-in, expense and category CRUD, dashboard summary, reports with charts and date-range filtering, and a CSV export trigger. Stores the opaque session token client-side and sends it as an 'Authorization: Bearer' header on every API call. Reads the API base URL from the VITE_API_BASE_URL environment variable. Built as a Vite SPA served from its own origin, separate from the API's origin.
+React Web SPA: the responsive browser UI for the whole app.
 
-**Related:** ARCH-003
+React 19 SPA providing registration, sign-in, expense and category CRUD, dashboard summary, reports with charts and date-range filtering, and CSV export trigger. Stores the opaque session token and sends it as Authorization: Bearer on every API call. Reads the API base URL from VITE_API_BASE_URL.
 
-### ARCH-003 · approved · source: architecture:components:api_backend
+**Related:** REQ-FEAT-SIGNIN, REQ-FEAT-EXPENSES, REQ-FEAT-CATEGORIES, REQ-FEAT-DASHBOARD, REQ-FEAT-REPORTS
 
-FastAPI 0.115 REST API that implements all business logic: auth/session management, per-user expense and category CRUD, dashboard/report aggregates, and CSV export.
+### ARCH-COMP-API · approved · source: architecture:components:api_backend
 
-Responsibilities: auth (register, sign-in, sign-out, deactivate); server-side session issuance/validation/revocation using an opaque token; expense and category CRUD scoped to the authenticated user; dashboard aggregates; report queries (over-time and by-category) with date-range filters; CSV export. Validates amounts, dates and categories on input (via Pydantic).
+FastAPI Backend: the REST API serving auth, data CRUD, aggregates and export.
 
-**Related:** ARCH-002, ARCH-004, ARCH-010
+FastAPI 0.115 REST API for auth (register, sign-in, sign-out, deactivate), server-side session issuance/validation/revocation with an opaque token, expense and category CRUD scoped to the authenticated user, dashboard aggregates, report queries (over-time and by-category with date-range filters), and CSV export. Validates amounts, dates and categories on input.
 
-### ARCH-004 · approved · source: architecture:components:database
+**Related:** REQ-FEAT-SIGNIN, REQ-FEAT-EXPENSES, REQ-FEAT-CATEGORIES, REQ-FEAT-DASHBOARD, REQ-FEAT-REPORTS, REQ-FEAT-PLATFORM
 
-PostgreSQL 16 relational store for users, sessions, categories and expenses.
+### ARCH-COMP-DB · approved · source: architecture:components:database
 
-Durable relational store enforcing per-user ownership via foreign keys. Performs date-range grouping and per-category aggregation for reports directly in SQL. Keeps monetary amounts exact using a numeric type (numeric(12,2) per the technology decision).
+PostgreSQL Database: durable, per-user-scoped relational store.
 
-**Related:** ARCH-003, ARCH-009
+PostgreSQL 16 store for users, sessions, categories and expenses. Enforces per-user ownership via foreign keys, performs date-range grouping and per-category aggregation for reports, and keeps monetary amounts exact with a numeric type.
 
-### ARCH-005 · approved · source: architecture:critical_paths:register
+**Related:** REQ-NFR-001, REQ-NFR-003
 
-Registration flow: a new visitor creates a private account with email and password.
+### ARCH-CP-REGISTER · approved · source: architecture:critical_paths:Register and start a private account
 
-A new visitor submits email and password. The backend validates email format and password rules, rejects a duplicate email, hashes the password, creates the user record, and either issues a session token directly or returns success and routes the user to the sign-in screen. Maps to endpoint POST /auth/register and the users entity.
+Registration flow from form submission to account creation.
 
-**Related:** ARCH-003, ARCH-004
+A new visitor submits email and password. The backend validates format and password rules, rejects a duplicate email, hashes the password, creates the user, and either issues a session token or returns success for the sign-in screen.
 
-### ARCH-006 · approved · source: architecture:critical_paths:signin_auth
+**Related:** REQ-FEAT-SIGNIN
 
-Sign-in and request authorization flow using an opaque bearer session token.
+### ARCH-CP-SIGNIN · approved · source: architecture:critical_paths:Sign in and authorise protected requests
 
-User signs in with email and password (POST /auth/login). On success, an opaque session token is returned in the response body and subsequently sent as a bearer header on later calls. Each protected request validates the token, checks its expiry/inactivity state and the account's active state, and scopes all returned data to that user. Maps to the sessions entity and GET /auth/me for session confirmation.
+Sign-in and bearer-token authorization flow for protected requests.
 
-**Related:** ARCH-003, ARCH-004
+User signs in with email and password. On success an opaque session token is returned in the body and sent as a bearer header on later calls. Each protected request validates the token, checks expiry/inactivity and account active state, and scopes data to the user.
 
-### ARCH-007 · approved · source: architecture:critical_paths:reports
+**Related:** REQ-FEAT-SIGNIN, REQ-NFR-004, REQ-NFR-005
 
-Reports flow: by-category and over-time spending with a user-selected date range.
+### ARCH-CP-REPORTS · approved · source: architecture:critical_paths:Reports: by-category and over-time with date range
 
-User opens reports and selects a start and end date. The backend validates the date range, runs grouped aggregation queries scoped to the user, and returns a time-series for the chart plus totals per category. Empty ranges return an empty series, which the UI renders as an empty state. Maps to GET /reports/over-time and GET /reports/by-category.
+Report generation flow with date-range validation and grouped queries.
 
-**Related:** ARCH-003, ARCH-004
+User opens reports and selects a start and end date. The backend validates the range, runs grouped aggregation queries scoped to the user, and returns series for the time chart and totals per category. Empty ranges return an empty series for the UI empty state.
 
-### ARCH-008 · approved · source: architecture:critical_paths:export_csv
+**Related:** REQ-FEAT-REPORTS
 
-CSV export flow: user downloads their own expenses, optionally filtered by date range.
+### ARCH-CP-EXPORT · approved · source: architecture:critical_paths:Export expenses as CSV
 
-User triggers an export of their expenses, optionally constrained to the currently selected date range. The backend streams a CSV built only from that user's own rows, with columns for amount, date, category and note. Maps to GET /expenses/export.
+CSV export flow, optionally scoped to a date range.
 
-**Related:** ARCH-003
+User exports their expenses, optionally within the selected date range. The backend streams a CSV built from the user's own rows with amount, date, category and note columns.
 
-### ARCH-009 · approved · source: architecture:entities
+**Related:** REQ-FEAT-REPORTS
 
-Data model: four tables -- users, sessions, categories, expenses -- all owned per-user.
+### ARCH-ENTITIES · approved · source: architecture:entities
 
-users: id, email, password_hash, is_active, created_at. sessions: id, user_id, token_hash, created_at, last_active_at, expires_at, revoked_at (supports opaque-token validation, expiry/inactivity checks and revocation). categories: id, user_id, name, created_at (unique name per user per the PostgreSQL technology decision). expenses: id, user_id, category_id, amount, spent_on, note, created_at, updated_at. Foreign keys enforce per-user ownership throughout.
+Core data entities in the relational schema.
 
-**Related:** ARCH-004
+users: id, email, password_hash, is_active, created_at. sessions: id, user_id, token_hash, created_at, last_active_at, expires_at, revoked_at. categories: id, user_id, name, created_at. expenses: id, user_id, category_id, amount, spent_on, note, created_at, updated_at.
 
-### ARCH-010 · approved · source: architecture:endpoints
+**Related:** ARCH-COMP-DB
 
-Full REST API surface: auth/session, account, categories, expenses, dashboard, reports and export.
+### ARCH-ENDPOINTS · approved · source: architecture:endpoints
 
-Auth/session: POST /auth/register (create account, rejects duplicate/invalid email or password); POST /auth/login (returns opaque session token on success, generic failure message); POST /auth/logout (revokes token server-side); GET /auth/me (confirms session validity); POST /account/deactivate (deactivates account, revokes all sessions, blocks future sign-in). Categories: GET /categories (list own categories); POST /categories (create, non-blank name unique within account); PATCH /categories/{id} (rename, valid+unique); DELETE /categories/{id} (blocked with explanation if expenses are assigned). Expenses: GET /expenses (list, most recent first); POST /expenses (create, positive amount, date, one of user's categories, optional note); PATCH /expenses/{id} (edit amount/date/category/note); DELETE /expenses/{id} (delete after confirmation). Dashboard/reports: GET /dashboard/summary (current-period total and top categories); GET /reports/over-time (time-series, optional date range); GET /reports/by-category (per-category totals, optional date range). Export: GET /expenses/export (CSV with amount, date, category, note, optional date range).
+REST API surface for auth, account, categories, expenses, dashboard and reports.
 
-**Related:** ARCH-003, ARCH-009
+POST /auth/register -- create account, rejects duplicate email/invalid email-password. POST /auth/login -- sign in, returns opaque session token or generic failure message. POST /auth/logout -- revoke current session token. GET /auth/me -- return current authenticated user. POST /account/deactivate -- deactivate account, revoke all sessions, block future sign-in. GET /categories -- list user's categories. POST /categories -- create category (non-blank, unique name). PATCH /categories/{id} -- rename category. DELETE /categories/{id} -- delete category only if no expenses assigned. GET /expenses -- list user's expenses, most recent first. POST /expenses -- create expense (positive amount, date, category, optional note). PATCH /expenses/{id} -- edit expense. DELETE /expenses/{id} -- delete expense after confirmation. GET /dashboard/summary -- current-period total and top categories. GET /reports/over-time -- time series of spending over optional date range. GET /reports/by-category -- per-category totals over optional date range. GET /expenses/export -- CSV export of user's expenses, optionally within a date range.
 
-### ARCH-011 · approved · source: architecture:deployment_nodes
+**Related:** ARCH-COMP-API
 
-AWS deployment topology: static SPA hosting, a containerized API service, and managed PostgreSQL.
+### ARCH-DEPLOY-NODES · approved · source: architecture:deployment_nodes
 
-Web SPA Static Host: AWS S3 + CloudFront serving the static React 19 build as the SPA origin. API Service: containerized on AWS (ECS Fargate or EC2) behind its own HTTPS endpoint, running FastAPI 0.115 on Python 3.12 via Uvicorn. Database: AWS RDS for PostgreSQL 16. The SPA and API are deployed on separate origins/endpoints.
+Planned AWS deployment topology for the three components.
 
-**Related:** ARCH-002, ARCH-003, ARCH-004
+Web SPA Static Host: AWS S3 + CloudFront serving the static React 19 build as the SPA origin. API Service: AWS container (ECS Fargate or EC2) running FastAPI 0.115 on Python 3.12 (Uvicorn) behind its own HTTPS endpoint. Database: AWS RDS for PostgreSQL 16.
 
-### ARCH-012 · approved · source: architecture:technology_decisions:frontend
+**Related:** ARCH-COMP-WEBSPA, ARCH-COMP-API, ARCH-COMP-DB
 
-Frontend stack decision: React 19, over Vue and Svelte alternatives.
+### ARCH-TECH-FRONTEND · approved · source: architecture:technology_decisions:Frontend
 
-Approved stack. Built as a Vite SPA served from its own origin; stores the opaque session token and renders interactive reports/charts that redraw live as the date-range filter changes, intended to feel instant on both desktop and mobile. Alternatives considered: Vue, Svelte.
+React 19 chosen over Vue/Svelte for the frontend.
 
-**Related:** ARCH-002
+Approved stack. Built as a Vite SPA served from its own origin; stores the opaque session token and renders interactive reports/charts that redraw live as the date-range filter changes, feeling instant on desktop and mobile. Alternatives considered: Vue, Svelte.
 
-### ARCH-013 · approved · source: architecture:technology_decisions:backend
+**Related:** REQ-TECH-STACK
 
-Backend stack decision: FastAPI 0.115, over Django REST Framework and Flask alternatives.
+### ARCH-TECH-BACKEND · approved · source: architecture:technology_decisions:Backend
+
+FastAPI 0.115 chosen over Django REST Framework/Flask for the backend.
 
 Approved stack. Pydantic request validation keeps amounts, dates and categories clean for financial figures; dependency-injected session checks make per-user scoping and bearer-token auth straightforward. Alternatives considered: Django REST Framework, Flask.
 
-**Related:** ARCH-003
+**Related:** REQ-TECH-STACK
 
-### ARCH-014 · approved · source: architecture:technology_decisions:database
+### ARCH-TECH-DATABASE · approved · source: architecture:technology_decisions:Database
 
-Database stack decision: PostgreSQL 16, over MySQL and SQLite alternatives.
+PostgreSQL 16 chosen over MySQL/SQLite for the database.
 
-Approved stack. numeric(12,2) keeps amounts exact to the cent; SQL grouping over a date range efficiently produces the over-time and by-category report figures per user; a unique (user_id, name) constraint enforces category uniqueness. Alternatives considered: MySQL, SQLite.
+Approved stack. numeric(12,2) keeps amounts exact to the cent; SQL grouping over a date range efficiently produces over-time and by-category report figures per user; a unique (user_id, name) constraint enforces category uniqueness. Alternatives considered: MySQL, SQLite.
 
-**Related:** ARCH-004, ARCH-009
+**Related:** REQ-TECH-STACK
 
-### ARCH-015 · approved · source: architecture:technology_decisions:cloud
+### ARCH-TECH-CLOUD · approved · source: architecture:technology_decisions:Cloud
 
-Cloud provider decision: AWS, over Google Cloud and Azure alternatives.
+AWS chosen over Google Cloud/Azure for hosting.
 
 Approved stack. RDS for PostgreSQL gives managed backups and encryption for private finance data; the API runs as a container alongside an S3/CloudFront-hosted SPA on a separate origin. Alternatives considered: Google Cloud, Azure.
 
-**Related:** ARCH-011
+**Related:** REQ-TECH-STACK
 <!-- sdlc:auto:end narrative -->
 
 <!-- sdlc:auto:start building-blocks -->

@@ -5,7 +5,7 @@
 <!-- sdlc:auto:start overview -->
 simple expense tracker
 
-**Documentation version:** v3
+**Documentation version:** v1
 <!-- sdlc:auto:end overview -->
 
 ## Contents
@@ -24,13 +24,13 @@ simple expense tracker
 | [API (OpenAPI)](architecture/api/openapi.yaml) | generated |
 | [Decisions (ADRs)](architecture/adr/README.md) | 4 decisions |
 | [Sprint plan](development/sprint-plan.md) | 5 sprints |
-| [Developer guide](development/developer-guide.md) | generated |
-| [API reference](development/api-reference.md) | 1 route |
+| [Developer guide](development/developer-guide.md) | not generated yet |
+| [API reference](development/api-reference.md) | 0 routes |
 | [Test report](testing/test-report.md) | not run yet |
 | [Tests](testing/test-cases.md) | 0 tests |
-| [Deployment guide](deployment/deployment-guide.md) | not deployed yet |
-| [Runbook](deployment/runbook.md) | not deployed yet |
-| [Release notes](deployment/release-notes.md) | 0 releases |
+| [Deployment guide](deployment/deployment-guide.md) | deployed |
+| [Runbook](deployment/runbook.md) | deployed |
+| [Release notes](deployment/release-notes.md) | 1 release |
 | [Traceability matrix](traceability-matrix.md) | 22 requirements |
-| [Changelog](CHANGELOG.md) | 3 versions |
+| [Changelog](CHANGELOG.md) | 1 version |
 <!-- sdlc:auto:end contents -->
