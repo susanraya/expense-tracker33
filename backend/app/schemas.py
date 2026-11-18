@@ -136,24 +136,17 @@ class ExpenseOut(BaseModel):
 
 
 class ExpenseCreate(BaseModel):
-    """POST /expenses body. AC-011: category_id is required and may not be null."""
+    """POST /expenses body."""
 
     amount: Decimal
     date: _date
-    description: str = ""
-    category_id: str
+    description: str
+    category_id: str | None = None
 
     @field_validator("amount")
     @classmethod
     def _check_amount(cls, value: Decimal) -> Decimal:
         return _validate_amount(value)
-
-    @field_validator("category_id")
-    @classmethod
-    def _check_category_id(cls, value: str | None) -> str:
-        if not value:
-            raise ValueError("category_id is required")
-        return value
 
 
 class ExpenseUpdate(BaseModel):

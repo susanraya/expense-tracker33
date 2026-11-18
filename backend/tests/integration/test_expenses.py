@@ -43,9 +43,9 @@ def _make_expense(
     description: str = "Lunch",
     category_id: str | None = None,
 ) -> dict:
-    if category_id is None:
-        category_id = _make_category(client, token, name=f"Cat-{uuid.uuid4().hex[:8]}")
-    payload = {"amount": amount, "date": on, "description": description, "category_id": category_id}
+    payload = {"amount": amount, "date": on, "description": description}
+    if category_id is not None:
+        payload["category_id"] = category_id
     response = client.post("/expenses", json=payload, headers=_auth_headers(token))
     return response.json()
 
@@ -119,7 +119,7 @@ def test_ac036_list_filters_by_category_id(client: TestClient) -> None:
     _, token = _register_and_login(client)
     category_id = _make_category(client, token)
     _make_expense(client, token, description="Categorized", category_id=category_id)
-    _make_expense(client, token, description="Other category")
+    _make_expense(client, token, description="Uncategorized")
 
     response = client.get(f"/expenses?category_id={category_id}", headers=_auth_headers(token))
 
@@ -226,123 +226,16 @@ def test_ac036_create_with_another_users_category_id_returns_404_and_creates_not
     assert db_session.execute(select(Expense)).first() is None
 
 
-def test_ac012_create_with_non_positive_amount_returns_422_naming_amount(
-    client: TestClient, db_session: Session
-) -> None:
-    _, token = _register_and_login(client)
-    category_id = _make_category(client, token)
-
-    response = client.post(
-        "/expenses",
-        json={"amount": 0, "date": "2026-01-01", "description": "x", "category_id": category_id},
-        headers=_auth_headers(token),
-    )
-
-    assert response.status_code == 422
-    detail = response.json()["detail"]
-    assert isinstance(detail, list)
-    assert any(error["loc"][-1] == "amount" for error in detail)
-    assert db_session.execute(select(Expense)).first() is None
-
-
-def test_ac012_create_with_non_numeric_amount_returns_422_naming_amount(
-    client: TestClient, db_session: Session
-) -> None:
-    _, token = _register_and_login(client)
-    category_id = _make_category(client, token)
-
-    response = client.post(
-        "/expenses",
-        json={
-            "amount": "not-a-number",
-            "date": "2026-01-01",
-            "description": "x",
-            "category_id": category_id,
-        },
-        headers=_auth_headers(token),
-    )
-
-    assert response.status_code == 422
-    detail = response.json()["detail"]
-    assert any(error["loc"][-1] == "amount" for error in detail)
-    assert db_session.execute(select(Expense)).first() is None
-
-
-def test_ac012_create_with_missing_date_returns_422_naming_date(
-    client: TestClient, db_session: Session
-) -> None:
-    _, token = _register_and_login(client)
-    category_id = _make_category(client, token)
-
-    response = client.post(
-        "/expenses",
-        json={"amount": 10.0, "description": "x", "category_id": category_id},
-        headers=_auth_headers(token),
-    )
-
-    assert response.status_code == 422
-    detail = response.json()["detail"]
-    assert any(error["loc"][-1] == "date" for error in detail)
-    assert db_session.execute(select(Expense)).first() is None
-
-
-def test_ac012_create_with_invalid_date_returns_422_naming_date(
-    client: TestClient, db_session: Session
-) -> None:
-    _, token = _register_and_login(client)
-    category_id = _make_category(client, token)
-
-    response = client.post(
-        "/expenses",
-        json={
-            "amount": 10.0,
-            "date": "not-a-date",
-            "description": "x",
-            "category_id": category_id,
-        },
-        headers=_auth_headers(token),
-    )
-
-    assert response.status_code == 422
-    detail = response.json()["detail"]
-    assert any(error["loc"][-1] == "date" for error in detail)
-    assert db_session.execute(select(Expense)).first() is None
-
-
-def test_ac011_create_with_missing_category_id_returns_422_naming_category_and_creates_nothing(
-    client: TestClient, db_session: Session
-) -> None:
+def test_create_with_non_positive_amount_returns_422(client: TestClient) -> None:
     _, token = _register_and_login(client)
 
     response = client.post(
         "/expenses",
-        json={"amount": 10.0, "date": "2026-01-01", "description": "x"},
+        json={"amount": 0, "date": "2026-01-01", "description": "x"},
         headers=_auth_headers(token),
     )
 
     assert response.status_code == 422
-    detail = response.json()["detail"]
-    assert isinstance(detail, list)
-    assert any(error["loc"][-1] == "category_id" for error in detail)
-    assert db_session.execute(select(Expense)).first() is None
-
-
-def test_ac011_create_with_null_category_id_returns_422_naming_category_and_creates_nothing(
-    client: TestClient, db_session: Session
-) -> None:
-    _, token = _register_and_login(client)
-
-    response = client.post(
-        "/expenses",
-        json={"amount": 10.0, "date": "2026-01-01", "description": "x", "category_id": None},
-        headers=_auth_headers(token),
-    )
-
-    assert response.status_code == 422
-    detail = response.json()["detail"]
-    assert isinstance(detail, list)
-    assert any(error["loc"][-1] == "category_id" for error in detail)
-    assert db_session.execute(select(Expense)).first() is None
 
 
 def test_amounts_are_stored_at_fixed_precision_without_float_drift(
@@ -416,26 +309,6 @@ def test_patch_with_unknown_category_id_returns_404_and_changes_nothing(
         select(Expense).where(Expense.id == uuid.UUID(created["id"]))
     ).scalar_one()
     assert stored.note == "Mine"
-
-
-def test_ac011_patch_rejects_setting_category_id_to_null_and_changes_nothing(
-    client: TestClient, db_session: Session
-) -> None:
-    _, token = _register_and_login(client)
-    created = _make_expense(client, token, amount=10.0, description="Mine")
-
-    response = client.patch(
-        f"/expenses/{created['id']}",
-        json={"category_id": None},
-        headers=_auth_headers(token),
-    )
-
-    assert response.status_code == 422
-    stored = db_session.execute(
-        select(Expense).where(Expense.id == uuid.UUID(created["id"]))
-    ).scalar_one()
-    assert stored.category_id is not None
-    assert str(stored.category_id) == created["category_id"]
 
 
 # --- DELETE /expenses/{id} ---

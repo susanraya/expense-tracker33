@@ -120,13 +120,16 @@ def list_expenses(
 def create_expense(
     payload: ExpenseCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ) -> ExpenseOut:
-    """AC-011/AC-036/NFR-001: category_id is required; an unknown or
-    other-user category_id is a 404 and creates nothing."""
-    category = _get_owned_category(db, user, payload.category_id)
+    """AC-036/NFR-001: owned by the caller; an unknown or other-user
+    category_id is a 404 and creates nothing."""
+    category_id = None
+    if payload.category_id is not None:
+        category = _get_owned_category(db, user, payload.category_id)
+        category_id = category.id
 
     expense = Expense(
         user_id=user.id,
-        category_id=category.id,
+        category_id=category_id,
         amount=payload.amount,
         spent_on=payload.date,
         note=payload.description,
@@ -150,15 +153,13 @@ def update_expense(
     expense = _get_owned_expense(db, user, expense_id)
     fields_set = payload.model_fields_set
 
-    if "category_id" in fields_set and payload.category_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[{"loc": ["body", "category_id"], "msg": "category_id may not be null"}],
-        )
-
+    new_category_id = expense.category_id
     if "category_id" in fields_set:
-        category = _get_owned_category(db, user, payload.category_id)
-        expense.category_id = category.id
+        if payload.category_id is None:
+            new_category_id = None
+        else:
+            category = _get_owned_category(db, user, payload.category_id)
+            new_category_id = category.id
 
     if "amount" in fields_set and payload.amount is not None:
         expense.amount = payload.amount
@@ -166,6 +167,7 @@ def update_expense(
         expense.spent_on = payload.date
     if "description" in fields_set and payload.description is not None:
         expense.note = payload.description
+    expense.category_id = new_category_id
 
     db.commit()
     db.refresh(expense)
