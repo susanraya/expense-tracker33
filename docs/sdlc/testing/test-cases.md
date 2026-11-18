@@ -3,9 +3,9 @@
 > Maintained by QuorQ AI SDLC. Text between `sdlc:auto` markers is regenerated; anything outside them is yours and is kept.
 
 <!-- sdlc:auto:start summary -->
-137 tests · Passed 133 · Failed 4 · Skipped 0 · Not run 0
+158 tests · Passed 152 · Failed 6 · Skipped 0 · Not run 0
 
-Acceptance criteria covered: 13/40 · passing: 10/40
+Acceptance criteria covered: 23/40 · passing: 18/40
 <!-- sdlc:auto:end summary -->
 
 <!-- sdlc:auto:start tests -->
@@ -66,12 +66,6 @@ Acceptance criteria covered: 13/40 · passing: 10/40
 | AC-009 | Settings > [AC-009] a 401 from /auth/me clears the stored token and redirects to sign-in | Unit | Passed | `frontend/src/screens/Settings.test.tsx` |
 | AC-009 | Settings > [AC-009] shows a loading state while /auth/me is pending | Unit | Passed | `frontend/src/screens/Settings.test.tsx` |
 | AC-036 | test_ac036_create_update_delete_persist_to_postgresql_and_are_visible_later | Integration | Passed | `backend/tests/integration/test_postgres_persistence.py` |
-| AC-008 | [AC-008] Settings displays the email just registered, not a hardcoded one | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
-| AC-008 | [AC-008] two different accounts each see their own email on Settings, never the other's | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
-| AC-008 | [AC-008] two freshly registered accounts each see only their own categories and expenses after sign-in | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
-| AC-009 | [AC-009] navigating directly to /dashboard with no session lands on sign-in and shows no account data | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
-| AC-009 | [AC-009] navigating directly to /reports with no session lands on sign-in and shows no account data | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
-| AC-009 | [AC-009] navigating directly to /settings with no session lands on sign-in and shows no account data | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
 
 ### US-020: Core data served over REST APIs backed by a database
 
@@ -80,16 +74,12 @@ Acceptance criteria covered: 13/40 · passing: 10/40
 | AC-009 | Categories > [AC-009] a 401 clears the stored token and redirects to sign-in | Unit | Passed | `frontend/src/screens/Categories.test.tsx` |
 | AC-036 | Categories > [AC-036] a 409 on create shows a duplicate-name message | Unit | Passed | `frontend/src/screens/Categories.test.tsx` |
 | AC-036 | Categories > [AC-036] creating a category calls POST /categories and adds it to the list | Unit | Passed | `frontend/src/screens/Categories.test.tsx` |
-| AC-036 | Categories > [AC-036] deleting a category calls DELETE /categories/{id} and removes it from the list | Unit | Passed | `frontend/src/screens/Categories.test.tsx` |
 | AC-036 | Categories > [AC-036] renders the signed-in user's categories from GET /categories | Unit | Passed | `frontend/src/screens/Categories.test.tsx` |
 | AC-036 | Categories > [AC-036] shows an error state when the list cannot be loaded | Unit | Passed | `frontend/src/screens/Categories.test.tsx` |
 | AC-036 | Categories > [AC-036] shows the empty state when there are no categories | Unit | Passed | `frontend/src/screens/Categories.test.tsx` |
 | AC-009 | Expenses > [AC-009] a 401 clears the stored token and redirects to sign-in | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
-| AC-036 | Expenses > [AC-036] creating an expense calls POST /expenses and the list refreshes | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
 | AC-036 | Expenses > [AC-036] deleting an expense calls DELETE /expenses/{id} and the list refreshes | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
-| AC-036 | Expenses > [AC-036] renders items and total from GET /expenses | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
 | AC-036 | Expenses > [AC-036] shows an error state when the list cannot be loaded | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
-| AC-036 | Expenses > [AC-036] shows the empty state when there are no expenses in range | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
 | AC-008 | test_ac008_delete_another_users_id_returns_404 | Integration | Passed | `backend/tests/integration/test_categories.py` |
 | AC-008 | test_ac008_delete_deletes_only_the_callers_own_category | Integration | Passed | `backend/tests/integration/test_categories.py` |
 | AC-008 | test_ac008_patch_another_users_id_returns_404_and_changes_nothing | Integration | Passed | `backend/tests/integration/test_categories.py` |
@@ -120,7 +110,6 @@ Acceptance criteria covered: 13/40 · passing: 10/40
 | AC-037 | test_ac037_list_without_a_token_returns_401_and_no_data | Integration | Passed | `backend/tests/integration/test_expenses.py` |
 | AC-037 | test_ac037_patch_without_a_token_returns_401 | Integration | Passed | `backend/tests/integration/test_expenses.py` |
 | — | test_amounts_are_stored_at_fixed_precision_without_float_drift | Integration | Passed | `backend/tests/integration/test_expenses.py` |
-| — | test_create_with_non_positive_amount_returns_422 | Integration | Passed | `backend/tests/integration/test_expenses.py` |
 | — | test_list_with_start_after_end_returns_422_with_a_clear_message | Integration | Passed | `backend/tests/integration/test_expenses.py` |
 | — | test_patch_with_unknown_category_id_returns_404_and_changes_nothing | Integration | Passed | `backend/tests/integration/test_expenses.py` |
 | AC-036 | test_ac036_category_and_expense_created_through_post_survive_a_later_request | Integration | Passed | `backend/tests/integration/test_token_validity_and_persistence.py` |
@@ -130,7 +119,7 @@ Acceptance criteria covered: 13/40 · passing: 10/40
 | AC-037 | test_ac037_no_token_returns_401_and_changes_no_row_on_every_endpoint | Integration | Passed | `backend/tests/integration/test_token_validity_and_persistence.py` |
 | AC-009 | [AC-009] navigating directly to /categories with no session lands on sign-in and shows no data | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
 | AC-009 | [AC-009] navigating directly to /expenses with no session lands on sign-in and shows no data | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
-| AC-036 | [AC-036] a signed-in user creates, lists, edits and deletes a category and an expense, surviving a page reload | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
+| AC-036 | [AC-036] a signed-in user creates, lists, edits and deletes a category and an expense, surviving a page reload | E2E | Failed | `frontend/e2e/expenses-categories.spec.ts` |
 
 ### US-021: Free to use with no payment processing
 
@@ -138,25 +127,69 @@ Acceptance criteria covered: 13/40 · passing: 10/40
 |---|---|---|---|---|
 | AC-038 | [AC-038] no billing or payment flow > account settings has no billing section and states the app is free to use | Unit | Passed | `frontend/src/screens/NoPayment.test.tsx` |
 | AC-038 | [AC-038] no billing or payment flow > logging expenses never asks for payment details | Unit | Passed | `frontend/src/screens/NoPayment.test.tsx` |
-| AC-038 | [AC-038] no billing or payment flow > managing categories never asks for payment details | Unit | Passed | `frontend/src/screens/NoPayment.test.tsx` |
 | AC-038 | [AC-038] no billing or payment flow > the dashboard a signed-in user lands on never asks for payment details | Unit | Passed | `frontend/src/screens/NoPayment.test.tsx` |
 | AC-038 | [AC-038] no billing or payment flow > the sign-in / create-account screen never asks for payment details and states the app is free | Unit | Passed | `frontend/src/screens/NoPayment.test.tsx` |
 | AC-038 | [AC-038] no billing or payment flow > viewing reports never asks for payment details | Unit | Passed | `frontend/src/screens/NoPayment.test.tsx` |
-| AC-038 | test_ac038_logging_an_expense_ignores_a_stray_payment_field_rather_than_demanding_one | Integration | Passed | `backend/tests/integration/test_no_payment_flow.py` |
-| AC-038 | test_ac038_managing_categories_ignores_a_stray_payment_field_rather_than_demanding_one | Integration | Passed | `backend/tests/integration/test_no_payment_flow.py` |
 | AC-038 | test_ac038_no_candidate_billing_or_payment_route_is_served | Integration | Passed | `backend/tests/integration/test_no_payment_flow.py` |
 | AC-038 | test_ac038_openapi_document_names_no_billing_or_payment_path | Integration | Passed | `backend/tests/integration/test_no_payment_flow.py` |
 | AC-038 | test_ac038_register_ignores_a_stray_payment_field_rather_than_demanding_one | Integration | Passed | `backend/tests/integration/test_no_payment_flow.py` |
 | AC-038 | test_ac038_register_succeeds_with_only_email_and_password_no_payment_field_required | Integration | Passed | `backend/tests/integration/test_no_payment_flow.py` |
 | AC-038 | [AC-038] Account settings states the app is free to use and has no billing section | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
-| AC-038 | [AC-038] a full journey -- register, create an expense, open the dashboard and reports -- never shows a payment, billing or subscription field or link | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
-| AC-038 | [AC-038] logging an expense through the API never requires or echoes back a payment field | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
+| AC-038 | [AC-038] a full journey -- register, create an expense, open the dashboard and reports -- never shows a payment, billing or subscription field or link | E2E | Failed | `frontend/e2e/no-payment.spec.ts` |
 | AC-038 | [AC-038] no billing, payment or subscription endpoint is served by the API | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
 | AC-038 | [AC-038] registering a new account asks only for email and password, never a payment detail | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
 | AC-038 | [AC-038] registering through the API succeeds from email and password alone, with no payment field required or echoed back | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
-| AC-038 | [AC-038] the Categories screen, used to manage the categories expenses are logged under, never asks for payment details | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
 | AC-038 | [AC-038] the Expenses screen, where expenses are logged, never asks for payment details | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
 | AC-038 | [AC-038] the Reports screen never asks for payment details | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
+
+## Sprint 2
+
+### US-006: Add an expense
+
+| Criteria | Test | Level | Result | File |
+|---|---|---|---|---|
+| AC-011 | Expenses > [AC-011] submitting with no category selected shows a validation message and sends no POST | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
+| AC-011, AC-012 | Expenses > [AC-011][AC-012] a valid save posts to POST /expenses, closes the dialog and refreshes the list | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
+| AC-012 | Expenses > [AC-012] a 422 from the API maps its detail to the matching field's message | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
+| AC-012 | Expenses > [AC-012] empty, non-numeric and non-positive amount, and empty date, each show a field message and block submission | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
+| AC-013 | Expenses > [AC-013] the form has no recurring, receipt or currency field | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
+| AC-014 | Expenses > [AC-014] renders amount, date, category and note from GET /expenses newest first | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
+| AC-015 | Expenses > [AC-015] shows the empty state inviting the user to add their first expense | Unit | Passed | `frontend/src/screens/Expenses.test.tsx` |
+| AC-011 | test_ac011_create_with_missing_category_id_returns_422_naming_category_and_creates_nothing | Integration | Passed | `backend/tests/integration/test_expenses.py` |
+| AC-011 | test_ac011_create_with_null_category_id_returns_422_naming_category_and_creates_nothing | Integration | Passed | `backend/tests/integration/test_expenses.py` |
+| AC-011 | test_ac011_patch_rejects_setting_category_id_to_null_and_changes_nothing | Integration | Passed | `backend/tests/integration/test_expenses.py` |
+| AC-012 | test_ac012_create_with_invalid_date_returns_422_naming_date | Integration | Passed | `backend/tests/integration/test_expenses.py` |
+| AC-012 | test_ac012_create_with_missing_date_returns_422_naming_date | Integration | Passed | `backend/tests/integration/test_expenses.py` |
+| AC-012 | test_ac012_create_with_non_numeric_amount_returns_422_naming_amount | Integration | Passed | `backend/tests/integration/test_expenses.py` |
+| AC-012 | test_ac012_create_with_non_positive_amount_returns_422_naming_amount | Integration | Passed | `backend/tests/integration/test_expenses.py` |
+| AC-011 | [AC-011] a signed-in user adds an expense with amount, date, an existing category and a note, and it appears at the top of the list with those values | E2E | Passed | `frontend/e2e/expenses-recording.spec.ts` |
+| AC-012 | [AC-012] a non-positive amount shows a validation message and creates no expense | E2E | Passed | `frontend/e2e/expenses-recording.spec.ts` |
+| AC-012 | [AC-012] an empty amount shows a validation message and creates no expense | E2E | Passed | `frontend/e2e/expenses-recording.spec.ts` |
+| AC-012 | [AC-012] an empty date shows a validation message and creates no expense | E2E | Passed | `frontend/e2e/expenses-recording.spec.ts` |
+| AC-012 | [AC-012] no category selected shows a validation message and creates no expense | E2E | Passed | `frontend/e2e/expenses-recording.spec.ts` |
+| AC-013 | [AC-013] the add-expense dialog has no recurring-schedule, receipt-attachment or currency control | E2E | Passed | `frontend/e2e/expenses-recording.spec.ts` |
+| AC-014 | [AC-014] a freshly signed-in user with no expenses sees the empty-state prompt to add a first expense, with no broken or empty widget | E2E | Passed | `frontend/e2e/expenses-recording.spec.ts` |
+| AC-015 | [AC-015] expenses created by one user are not visible to a second signed-in user | E2E | Passed | `frontend/e2e/expenses-recording.spec.ts` |
+
+### US-012: Delete a category
+
+| Criteria | Test | Level | Result | File |
+|---|---|---|---|---|
+| AC-036 | Categories > [AC-036] a 409 on confirmed delete warns that the category still has expenses and keeps it in the list | Unit | Passed | `frontend/src/screens/Categories.test.tsx` |
+| AC-036 | Categories > [AC-036] cancelling a delete sends no request and keeps the category | Unit | Passed | `frontend/src/screens/Categories.test.tsx` |
+| AC-036 | Categories > [AC-036] confirming delete calls DELETE /categories/{id}, removes it from the list and shows success | Unit | Passed | `frontend/src/screens/Categories.test.tsx` |
+| AC-019 | test_ac019_delete_with_no_expenses_assigned_returns_204_and_removes_the_row | Integration | Passed | `backend/tests/integration/test_categories.py` |
+| AC-020 | test_ac020_delete_with_expenses_assigned_returns_409_and_changes_nothing | Integration | Passed | `backend/tests/integration/test_categories.py` |
+| AC-021 | test_ac021_delete_with_multiple_expenses_names_the_count | Integration | Passed | `backend/tests/integration/test_categories.py` |
+| AC-022 | test_ac022_blocked_delete_never_sets_expense_category_id_to_null | Integration | Passed | `backend/tests/integration/test_categories.py` |
+| AC-023 | test_ac023_patch_rename_reflects_in_expense_category_name | Integration | Passed | `backend/tests/integration/test_categories.py` |
+| AC-019 | [AC-019] a blank category name shows a validation message and creates nothing | E2E | Passed | `frontend/e2e/categories-guarded-delete.spec.ts` |
+| AC-019 | [AC-019] a duplicate category name shows a validation message and creates a second nothing | E2E | Passed | `frontend/e2e/categories-guarded-delete.spec.ts` |
+| AC-019 | [AC-019] creating a category with a unique non-blank name shows it in the list and in the expense form's category select | E2E | Passed | `frontend/e2e/categories-guarded-delete.spec.ts` |
+| AC-019 | [AC-019] deleting a category with no expenses, after confirming, removes it from the list | E2E | Passed | `frontend/e2e/categories-guarded-delete.spec.ts` |
+| AC-019 | [AC-019] one user's categories are never visible to a second signed-in user | E2E | Passed | `frontend/e2e/categories-guarded-delete.spec.ts` |
+| AC-020 | [AC-020] deleting a category that has an expense assigned shows the warning explaining how to proceed, and the category and the expense both remain | E2E | Passed | `frontend/e2e/categories-guarded-delete.spec.ts` |
+| AC-023 | [AC-023] renaming a category to a valid unique name updates the list and the category name shown on an assigned expense | E2E | Passed | `frontend/e2e/categories-guarded-delete.spec.ts` |
 
 ## Project setup
 

@@ -7,87 +7,83 @@ _Up to date._
 <!-- sdlc:auto:end status -->
 
 <!-- sdlc:auto:start source -->
-Generated from commit `cafd3ba` · model `claude-sonnet-5`
+Generated from commit `34bd221` · model `claude-sonnet-5`
 <!-- sdlc:auto:end source -->
 
 <!-- sdlc:auto:start overview -->
-Expense tracker is a generated full-stack prototype consisting of two independently runnable apps in one repo. The backend is a FastAPI 0.115 service (SQLAlchemy 2.0 models, Alembic migrations, Pydantic schemas) that implements registration/login/session auth, per-user categories and expenses, all backed by SQLite by default (Postgres via DATABASE_URL). The frontend is a Vite + React 19 SPA with approved, reviewed screens (Dashboard, Expenses, Categories, Reports, Settings) styled with Tailwind and routed with react-router. Per the project's own README, the frontend screens currently render seeded/sample data rather than calling the backend — `src/lib/api.ts` is the prepared seam (bearer-token fetch wrapper) for wiring real calls to the FastAPI endpoints later.
+Expense tracker is a Quorq-generated two-part app: a FastAPI 0.115 backend (Python, SQLAlchemy, Alembic migrations, SQLite by default or Postgres via DATABASE_URL) exposing auth, category and expense REST endpoints, and a Vite + React 19 single-page frontend. The backend currently implements real auth/account/category/expense routes behind bearer-token sessions, each query scoped to the authenticated user. The frontend's screens were approved against seeded sample data and are not yet wired to the backend's real endpoints — `src/lib/api.ts` is the prepared fetch wrapper/session-token store for that integration.
 <!-- sdlc:auto:end overview -->
 
 <!-- sdlc:auto:start prerequisites -->
 - Python 3.12 (matches backend/Dockerfile base image)
-- Node.js and npm (for the Vite/React frontend tooling in frontend/package.json)
-- pip (Python package installer)
-- Docker and Docker Compose (optional — only needed to run the Postgres service in docker-compose.yml)
+- pip
+- Node.js and npm (for the Vite 6 / React 19 frontend)
+- Docker and docker-compose (optional, to run the PostgreSQL 16 service in docker-compose.yml)
 <!-- sdlc:auto:end prerequisites -->
 
 <!-- sdlc:auto:start setup -->
 1. Clone the repository.
-2. cd backend
-3. pip install -r requirements.txt
-4. (optional) set DATABASE_URL to point at Postgres instead of the local SQLite default — e.g. run `docker-compose up -d db` from the repo root first to start the postgres:16-alpine service defined in docker-compose.yml
-5. uvicorn app.main:app --reload  (applies Alembic migrations and seeds bootstrap users on startup, per backend/app/main.py)
-6. In a separate terminal: cd frontend
-7. npm install
-8. npm run dev
-9. (optional) set VITE_API_BASE_URL in the frontend environment to point the API client in src/lib/api.ts at a non-default backend URL
+2. Backend: cd backend && pip install -r requirements.txt
+3. (Optional, to use Postgres instead of the SQLite default) from the repo root run: docker-compose up -d, then export DATABASE_URL to point at it (see backend/app/database.py for the DATABASE_URL env var).
+4. Start the backend: uvicorn app.main:app --reload (run from inside backend/). It applies Alembic migrations and seeds bootstrap users on startup.
+5. Frontend: cd frontend && npm install
+6. Start the frontend: npm run dev
+7. Optionally set VITE_API_BASE_URL and VITE_API_SECRET_KEY (read in frontend/src/lib/api.ts) if the frontend needs to reach a non-default backend URL/shared secret.
 <!-- sdlc:auto:end setup -->
 
 <!-- sdlc:auto:start run -->
 | Name | Command | Description |
 |---|---|---|
-| backend: dev server | `uvicorn app.main:app --reload` | Starts the FastAPI app from backend/, running migrations and seeding bootstrap users on startup. |
-| frontend: dev server | `npm run dev` | Starts the Vite dev server for the React SPA (default port 5173, matching the backend's default CORS allow-list). |
-| frontend: build | `npm run build` | Bundles the production frontend with Vite (does not typecheck). |
-| frontend: preview | `npm run preview` | Serves the built frontend bundle locally. |
-| db: start Postgres | `docker-compose up -d db` | Starts the postgres:16-alpine service defined in docker-compose.yml for use via DATABASE_URL. |
+| backend dev | `cd backend && uvicorn app.main:app --reload` | Runs the FastAPI app with auto-reload; applies Alembic migrations and seeds bootstrap users on startup. |
+| frontend dev | `cd frontend && npm run dev` | Starts the Vite dev server for the React SPA. |
+| frontend build | `cd frontend && npm run build` | Bundles the app with Vite (does not typecheck). |
+| frontend preview | `cd frontend && npm run preview` | Serves the production build locally. |
 <!-- sdlc:auto:end run -->
 
 <!-- sdlc:auto:start structure -->
 | Path | Purpose |
 |---|---|
-| `backend/app` | FastAPI application: main.py entrypoint/migrations runner, models.py (SQLAlchemy), schemas.py (Pydantic), auth.py/security.py, seed.py, and routers/ (auth, account, categories, expenses). |
-| `backend/migrations` | Alembic migration environment and versioned schema scripts; the schema is created/changed only through these, never via create_all. |
-| `backend/tests` | pytest suite split into unit/ and integration/ tests for auth, categories, expenses, health, and session behavior. |
-| `backend/scripts` | Operational scripts, e.g. check_connections.py. |
-| `frontend/src` | React SPA source: screens/ (one module per approved screen), lib/ (api client, auth context, ui/icon vocabulary, brand tokens), App.tsx (nav shell/routes), main.tsx (entry). |
-| `frontend/e2e` | Playwright acceptance specs (auth flows, expenses/categories, no-payment) plus shared support helpers. |
-| `.devcontainer` | VS Code devcontainer configuration for a consistent local dev environment. |
-| `.quorq` | Quorq platform metadata (handoff.json, prepared.json) describing this generated project to the platform. |
+| `backend/app` | FastAPI application: main.py entrypoint, database.py engine/session, models.py SQLAlchemy models, schemas.py Pydantic models, auth.py/security.py session and password logic, seed.py bootstrap users, routers/ for auth, account, categories, expenses |
+| `backend/migrations` | Alembic migration environment and versioned schema scripts (migrations/versions) |
+| `backend/tests` | Pytest unit and integration tests (tests/unit, tests/integration) |
+| `backend/scripts` | Operational helper scripts (e.g. check_connections.py) |
+| `frontend/src` | React app source: App.tsx shell/routes, main.tsx entry, screens/, lib/ |
+| `frontend/src/screens` | One module per approved screen (Dashboard, Expenses, Categories, Reports, Settings, SignIn) plus their component tests |
+| `frontend/src/lib` | Shared frontend modules: api.ts (API client/session token), auth.tsx (auth context/route guard), ui.tsx and icons.tsx (component vocabulary), brand.ts (design tokens), navigate.ts |
+| `frontend/e2e` | Playwright acceptance specs and support helpers |
+| `.devcontainer` | Dev container configuration for a consistent local environment |
+| `.quorq` | Quorq platform metadata for this generated project (handoff/prepared state), not application code |
 <!-- sdlc:auto:end structure -->
 
 <!-- sdlc:auto:start conventions -->
-- Backend: one router per architecture component (auth, account, categories, expenses), one route per declared endpoint, registered in app/main.py.
-- Every per-user query filters by the authenticated user's id in the query itself; a mismatched owner returns 404, never 403, so another user's resource is indistinguishable from a missing one.
-- Primary keys are UUIDs generated application-side via SQLAlchemy's Uuid() column default, not database-generated.
-- Database schema is created and evolved only via Alembic migrations in backend/migrations; Base.metadata.create_all is never used in a production code path.
-- Passwords are never stored in plaintext — hashed via passlib/bcrypt (app/security.py).
-- Login returns a generic 401 for unknown email, wrong password, or deactivated account alike, to avoid leaking account existence.
-- Pydantic schemas follow an *Out / *Create / *Update naming split per entity in app/schemas.py, with field validators for email, password, category name, and amount.
-- Frontend: one module per approved screen under src/screens/, sharing a common UI/icon vocabulary (src/lib/ui.tsx, src/lib/icons.tsx) and brand tokens (src/lib/brand.ts, src/index.css).
-- Frontend component tests live beside the component they cover (e.g. Categories.test.tsx next to Categories.tsx); Playwright e2e specs live separately under frontend/e2e/.
-- All frontend API calls are intended to go through the single apiFetch wrapper in src/lib/api.ts, which attaches the bearer session token (or shared secret) and centralizes 401 handling.
+- One router per domain (auth, account, categories, expenses), one route per API-spec endpoint, mounted in app/main.py
+- UUID primary keys on all models, serialized as strings in API responses
+- Per-request ownership filtering baked into queries (user_id == current user); a resource owned by another user returns 404, never 403
+- Schema changes only via Alembic migrations, never via Base.metadata.create_all in production code paths
+- Passwords hashed with passlib/bcrypt; generic 401 on login for unknown email, wrong password, or deactivated account (no information leakage)
+- Pydantic request/response schema pair per entity in schemas.py, with field_validators for input rules (email format, password strength, amount > 0)
+- Frontend screens live one-per-file under src/screens with a colocated *.test.tsx; e2e specs live under e2e/ as *.spec.ts and are excluded from Vitest's include pattern
+- Frontend API/session concerns centralized in src/lib/api.ts (apiFetch, ApiError, session token storage) rather than spread across screens
 <!-- sdlc:auto:end conventions -->
 
 <!-- sdlc:auto:start testing -->
 | Name | Command | Description |
 |---|---|---|
-| backend: unit/integration tests | `pytest` | Runs the backend/tests suite (unit/ and integration/) from the backend directory. |
-| backend: lint | `ruff check .` | Lints the backend Python code per backend/ruff.toml. |
-| backend: format check | `ruff format .` | Formats/checks formatting of backend Python code. |
-| frontend: unit tests | `npm run test` | Runs Vitest component tests under frontend/src. |
-| frontend: typecheck | `npm run typecheck` | Runs tsc --noEmit to catch type errors npm run build does not. |
-| frontend: lint | `npm run lint` | Runs ESLint over the frontend app; this gate must stay green per frontend/README.md. |
-| frontend: e2e install | `npm run test:e2e:install` | Installs the Chromium browser Playwright needs. |
-| frontend: e2e tests | `npm run test:e2e` | Runs Playwright specs from frontend/e2e; without E2E_BASE_URL it boots the backend (from backend/.venv) and builds/serves the frontend locally. |
+| backend tests | `cd backend && pytest` | Runs backend unit and integration tests (pytest.ini sets pythonpath=. and testpaths=tests). |
+| backend lint | `cd backend && ruff check .` | Lints the backend Python code. |
+| backend format check | `cd backend && ruff format .` | Formats backend Python code with ruff. |
+| frontend unit tests | `cd frontend && npm test` | Runs Vitest component tests colocated with screens/components. |
+| frontend lint | `cd frontend && npm run lint` | Runs ESLint across the frontend app. |
+| frontend typecheck | `cd frontend && npm run typecheck` | Runs tsc --noEmit; not run by npm run build. |
+| frontend e2e | `cd frontend && npm run test:e2e:install && npm run test:e2e` | Installs the Chromium browser then runs Playwright specs from e2e/; builds/serves the app locally unless E2E_BASE_URL is set. |
 <!-- sdlc:auto:end testing -->
 
 <!-- sdlc:auto:start troubleshooting -->
 | Problem | Solution |
 |---|---|
-| `pytest` from backend/ fails with `ModuleNotFoundError: No module named 'app'`. | Run pytest from the backend/ directory itself — backend/pytest.ini sets `pythonpath = .` relative to that directory. |
-| Backend fails to start with a 'table already exists' or migration error against a stale SQLite file. | app/main.py already handles the common stale-file and race cases by stamping instead of re-running migrations; if it still fails, delete the local app.db file and restart uvicorn to let migrations recreate it from scratch. |
-| Frontend calls to the backend are blocked by CORS. | Set the backend's ALLOWED_ORIGINS environment variable to a comma-separated list including the frontend's origin; the default dev-mode allow-list only covers http://localhost:5173 and http://127.0.0.1:5173. |
-| `npm run test:e2e` fails because it can't boot the backend. | Playwright's webServer config expects a Python virtualenv at backend/.venv; create it and run `pip install -r requirements.txt` inside backend/.venv before running the e2e suite, or set E2E_BASE_URL to point at an already-running deployment instead. |
-| `npm run build` succeeds but the app has type errors. | `npm run build` does not typecheck; run `npm run typecheck` (tsc --noEmit) separately to catch issues before deploying. |
+| Frontend calls to the backend fail with a CORS error in the browser console. | Set ALLOWED_ORIGINS on the backend to the frontend's origin (comma-separated); without it only http://localhost:5173 and http://127.0.0.1:5173 are allowed (app/main.py). |
+| Backend fails to start migrations against a pre-existing local SQLite file (app.db) left from an earlier run. | main.py's _run_migrations already detects a stale/partial schema and stamps or rebuilds it automatically; if it still errors, delete the local app.db file and restart uvicorn so Alembic can create the schema cleanly. |
+| Playwright e2e tests fail to launch a browser. | Run npm run test:e2e:install first to fetch Chromium before npm run test:e2e. |
+| 401 responses on frontend API calls even though a user appears signed in. | Check that a real session token (not the shared VITE_API_SECRET_KEY) was stored via setSessionToken after /auth/login; apiFetch in src/lib/api.ts clears the stored token and triggers sign-out on any 401 from an authenticated call. |
+| Wanted to run against Postgres instead of the SQLite default. | Start docker-compose up -d (postgres:16-alpine service) and set DATABASE_URL to point the backend at it before starting uvicorn; database.py otherwise defaults to sqlite:///./app.db. |
 <!-- sdlc:auto:end troubleshooting -->

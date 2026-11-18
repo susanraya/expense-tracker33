@@ -15,7 +15,6 @@
 - US-005: Deactivate my account
 - US-020: Core data served over REST APIs backed by a database
 - US-021: Free to use with no payment processing
-- US-FIX-1: Fix the scaffold's failing checks
 
 ## 9fddcbc682cd — 2026-11-18
 
