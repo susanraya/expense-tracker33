@@ -3,9 +3,9 @@
 > Maintained by QuorQ AI SDLC. Text between `sdlc:auto` markers is regenerated; anything outside them is yours and is kept.
 
 <!-- sdlc:auto:start summary -->
-120 tests · Passed 98 · Failed 0 · Skipped 0 · Not run 22
+137 tests · Passed 133 · Failed 4 · Skipped 0 · Not run 0
 
-Acceptance criteria covered: 13/40 · passing: 2/40
+Acceptance criteria covered: 13/40 · passing: 10/40
 <!-- sdlc:auto:end summary -->
 
 <!-- sdlc:auto:start tests -->
@@ -20,6 +20,8 @@ Acceptance criteria covered: 13/40 · passing: 2/40
 | AC-003 | test_ac003_rejects_password_too_short | Unit | Passed | `backend/tests/unit/test_auth_schemas.py` |
 | AC-003 | test_ac003_rejects_password_without_a_digit | Unit | Passed | `backend/tests/unit/test_auth_schemas.py` |
 | AC-003 | test_ac003_rejects_password_without_a_letter | Unit | Passed | `backend/tests/unit/test_auth_schemas.py` |
+| — | test_seeding_nothing_when_env_vars_are_unset | Unit | Passed | `backend/tests/unit/test_seed.py` |
+| — | test_seeding_twice_creates_one_user_per_pair | Unit | Passed | `backend/tests/unit/test_seed.py` |
 | AC-007 | test_ac007_default_idle_timeout_is_30_minutes | Unit | Passed | `backend/tests/unit/test_session_expiry.py` |
 | AC-007 | test_ac007_naive_expires_at_is_treated_as_utc | Unit | Passed | `backend/tests/unit/test_session_expiry.py` |
 | AC-007 | test_ac007_session_past_idle_window_is_expired | Unit | Passed | `backend/tests/unit/test_session_expiry.py` |
@@ -44,17 +46,32 @@ Acceptance criteria covered: 13/40 · passing: 2/40
 | AC-007 | test_ac007_me_without_a_token_returns_401 | Integration | Passed | `backend/tests/integration/test_auth.py` |
 | AC-010 | test_ac010_deactivate_revokes_sessions_and_blocks_future_sign_in | Integration | Passed | `backend/tests/integration/test_auth.py` |
 | AC-010 | test_ac010_deactivate_without_a_token_returns_401 | Integration | Passed | `backend/tests/integration/test_auth.py` |
-| AC-010 | [AC-010] confirming deactivation in Settings ends the session and the same credentials can no longer sign in | E2E | Not run yet | `frontend/e2e/auth-deactivation.spec.ts` |
-| AC-001 | [AC-001] a new visitor registers with a valid email and a conforming password and reaches the dashboard | E2E | Not run yet | `frontend/e2e/auth-registration.spec.ts` |
-| AC-002 | [AC-002] registering with an already-registered email shows a clear rejection and no second account is created | E2E | Not run yet | `frontend/e2e/auth-registration.spec.ts` |
-| AC-003 | [AC-003] a too-short password shows a validation message and creates no account | E2E | Not run yet | `frontend/e2e/auth-registration.spec.ts` |
-| AC-003 | [AC-003] an invalid email shows a validation message and creates no account | E2E | Not run yet | `frontend/e2e/auth-registration.spec.ts` |
-| AC-006 | [AC-006] after Sign out, navigating directly to /dashboard lands on the sign-in screen | E2E | Not run yet | `frontend/e2e/auth-session.spec.ts` |
-| AC-007 | [AC-007] with the stored token cleared, the next protected action redirects to sign-in | E2E | Not run yet | `frontend/e2e/auth-session.spec.ts` |
-| AC-007 | [AC-007] with the stored token revoked server-side, the next protected action redirects to sign-in | E2E | Not run yet | `frontend/e2e/auth-session.spec.ts` |
-| AC-004 | [AC-004] signing in with the seeded smoke-test credentials reaches the dashboard | E2E | Not run yet | `frontend/e2e/auth-signin.spec.ts` |
-| AC-005 | [AC-005] a wrong password for a real account shows the generic failure message | E2E | Not run yet | `frontend/e2e/auth-signin.spec.ts` |
-| AC-005 | [AC-005] an unknown email shows the exact same generic failure message, never revealing whether the email exists | E2E | Not run yet | `frontend/e2e/auth-signin.spec.ts` |
+| AC-010 | [AC-010] confirming deactivation in Settings ends the session and the same credentials can no longer sign in | E2E | Passed | `frontend/e2e/auth-deactivation.spec.ts` |
+| AC-001 | [AC-001] a new visitor registers with a valid email and a conforming password and reaches the dashboard | E2E | Passed | `frontend/e2e/auth-registration.spec.ts` |
+| AC-002 | [AC-002] registering with an already-registered email shows a clear rejection and no second account is created | E2E | Passed | `frontend/e2e/auth-registration.spec.ts` |
+| AC-003 | [AC-003] a too-short password shows a validation message and creates no account | E2E | Passed | `frontend/e2e/auth-registration.spec.ts` |
+| AC-003 | [AC-003] an invalid email shows a validation message and creates no account | E2E | Passed | `frontend/e2e/auth-registration.spec.ts` |
+| AC-006 | [AC-006] after Sign out, navigating directly to /dashboard lands on the sign-in screen | E2E | Passed | `frontend/e2e/auth-session.spec.ts` |
+| AC-007 | [AC-007] with the stored token cleared, the next protected action redirects to sign-in | E2E | Passed | `frontend/e2e/auth-session.spec.ts` |
+| AC-007 | [AC-007] with the stored token revoked server-side, the next protected action redirects to sign-in | E2E | Failed | `frontend/e2e/auth-session.spec.ts` |
+| AC-004 | [AC-004] signing in with the seeded smoke-test credentials reaches the dashboard | E2E | Failed | `frontend/e2e/auth-signin.spec.ts` |
+| AC-005 | [AC-005] a wrong password for a real account shows the generic failure message | E2E | Failed | `frontend/e2e/auth-signin.spec.ts` |
+| AC-005 | [AC-005] an unknown email shows the exact same generic failure message, never revealing whether the email exists | E2E | Failed | `frontend/e2e/auth-signin.spec.ts` |
+
+### US-004: Keep my data private to my account
+
+| Criteria | Test | Level | Result | File |
+|---|---|---|---|---|
+| AC-008 | Settings > [AC-008] renders the email and created date returned by GET /auth/me, not a hardcoded account | Unit | Passed | `frontend/src/screens/Settings.test.tsx` |
+| AC-009 | Settings > [AC-009] a 401 from /auth/me clears the stored token and redirects to sign-in | Unit | Passed | `frontend/src/screens/Settings.test.tsx` |
+| AC-009 | Settings > [AC-009] shows a loading state while /auth/me is pending | Unit | Passed | `frontend/src/screens/Settings.test.tsx` |
+| AC-036 | test_ac036_create_update_delete_persist_to_postgresql_and_are_visible_later | Integration | Passed | `backend/tests/integration/test_postgres_persistence.py` |
+| AC-008 | [AC-008] Settings displays the email just registered, not a hardcoded one | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
+| AC-008 | [AC-008] two different accounts each see their own email on Settings, never the other's | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
+| AC-008 | [AC-008] two freshly registered accounts each see only their own categories and expenses after sign-in | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
+| AC-009 | [AC-009] navigating directly to /dashboard with no session lands on sign-in and shows no account data | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
+| AC-009 | [AC-009] navigating directly to /reports with no session lands on sign-in and shows no account data | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
+| AC-009 | [AC-009] navigating directly to /settings with no session lands on sign-in and shows no account data | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
 
 ### US-020: Core data served over REST APIs backed by a database
 
@@ -111,9 +128,9 @@ Acceptance criteria covered: 13/40 · passing: 2/40
 | AC-037 | test_ac037_idle_expired_token_returns_401_and_changes_no_row_on_every_endpoint | Integration | Passed | `backend/tests/integration/test_token_validity_and_persistence.py` |
 | AC-037 | test_ac037_logged_out_token_returns_401_and_changes_no_row_on_every_endpoint | Integration | Passed | `backend/tests/integration/test_token_validity_and_persistence.py` |
 | AC-037 | test_ac037_no_token_returns_401_and_changes_no_row_on_every_endpoint | Integration | Passed | `backend/tests/integration/test_token_validity_and_persistence.py` |
-| AC-009 | [AC-009] navigating directly to /categories with no session lands on sign-in and shows no data | E2E | Not run yet | `frontend/e2e/expenses-categories.spec.ts` |
-| AC-009 | [AC-009] navigating directly to /expenses with no session lands on sign-in and shows no data | E2E | Not run yet | `frontend/e2e/expenses-categories.spec.ts` |
-| AC-036 | [AC-036] a signed-in user creates, lists, edits and deletes a category and an expense, surviving a page reload | E2E | Not run yet | `frontend/e2e/expenses-categories.spec.ts` |
+| AC-009 | [AC-009] navigating directly to /categories with no session lands on sign-in and shows no data | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
+| AC-009 | [AC-009] navigating directly to /expenses with no session lands on sign-in and shows no data | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
+| AC-036 | [AC-036] a signed-in user creates, lists, edits and deletes a category and an expense, surviving a page reload | E2E | Passed | `frontend/e2e/expenses-categories.spec.ts` |
 
 ### US-021: Free to use with no payment processing
 
@@ -121,20 +138,25 @@ Acceptance criteria covered: 13/40 · passing: 2/40
 |---|---|---|---|---|
 | AC-038 | [AC-038] no billing or payment flow > account settings has no billing section and states the app is free to use | Unit | Passed | `frontend/src/screens/NoPayment.test.tsx` |
 | AC-038 | [AC-038] no billing or payment flow > logging expenses never asks for payment details | Unit | Passed | `frontend/src/screens/NoPayment.test.tsx` |
+| AC-038 | [AC-038] no billing or payment flow > managing categories never asks for payment details | Unit | Passed | `frontend/src/screens/NoPayment.test.tsx` |
 | AC-038 | [AC-038] no billing or payment flow > the dashboard a signed-in user lands on never asks for payment details | Unit | Passed | `frontend/src/screens/NoPayment.test.tsx` |
 | AC-038 | [AC-038] no billing or payment flow > the sign-in / create-account screen never asks for payment details and states the app is free | Unit | Passed | `frontend/src/screens/NoPayment.test.tsx` |
 | AC-038 | [AC-038] no billing or payment flow > viewing reports never asks for payment details | Unit | Passed | `frontend/src/screens/NoPayment.test.tsx` |
+| AC-038 | test_ac038_logging_an_expense_ignores_a_stray_payment_field_rather_than_demanding_one | Integration | Passed | `backend/tests/integration/test_no_payment_flow.py` |
+| AC-038 | test_ac038_managing_categories_ignores_a_stray_payment_field_rather_than_demanding_one | Integration | Passed | `backend/tests/integration/test_no_payment_flow.py` |
 | AC-038 | test_ac038_no_candidate_billing_or_payment_route_is_served | Integration | Passed | `backend/tests/integration/test_no_payment_flow.py` |
 | AC-038 | test_ac038_openapi_document_names_no_billing_or_payment_path | Integration | Passed | `backend/tests/integration/test_no_payment_flow.py` |
 | AC-038 | test_ac038_register_ignores_a_stray_payment_field_rather_than_demanding_one | Integration | Passed | `backend/tests/integration/test_no_payment_flow.py` |
 | AC-038 | test_ac038_register_succeeds_with_only_email_and_password_no_payment_field_required | Integration | Passed | `backend/tests/integration/test_no_payment_flow.py` |
-| AC-038 | [AC-038] Account settings states the app is free to use and has no billing section | E2E | Not run yet | `frontend/e2e/no-payment.spec.ts` |
-| AC-038 | [AC-038] a full journey -- register, create an expense, open the dashboard and reports -- never shows a payment, billing or subscription field or link | E2E | Not run yet | `frontend/e2e/no-payment.spec.ts` |
-| AC-038 | [AC-038] no billing, payment or subscription endpoint is served by the API | E2E | Not run yet | `frontend/e2e/no-payment.spec.ts` |
-| AC-038 | [AC-038] registering a new account asks only for email and password, never a payment detail | E2E | Not run yet | `frontend/e2e/no-payment.spec.ts` |
-| AC-038 | [AC-038] registering through the API succeeds from email and password alone, with no payment field required or echoed back | E2E | Not run yet | `frontend/e2e/no-payment.spec.ts` |
-| AC-038 | [AC-038] the Expenses screen, where expenses are logged, never asks for payment details | E2E | Not run yet | `frontend/e2e/no-payment.spec.ts` |
-| AC-038 | [AC-038] the Reports screen never asks for payment details | E2E | Not run yet | `frontend/e2e/no-payment.spec.ts` |
+| AC-038 | [AC-038] Account settings states the app is free to use and has no billing section | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
+| AC-038 | [AC-038] a full journey -- register, create an expense, open the dashboard and reports -- never shows a payment, billing or subscription field or link | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
+| AC-038 | [AC-038] logging an expense through the API never requires or echoes back a payment field | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
+| AC-038 | [AC-038] no billing, payment or subscription endpoint is served by the API | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
+| AC-038 | [AC-038] registering a new account asks only for email and password, never a payment detail | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
+| AC-038 | [AC-038] registering through the API succeeds from email and password alone, with no payment field required or echoed back | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
+| AC-038 | [AC-038] the Categories screen, used to manage the categories expenses are logged under, never asks for payment details | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
+| AC-038 | [AC-038] the Expenses screen, where expenses are logged, never asks for payment details | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
+| AC-038 | [AC-038] the Reports screen never asks for payment details | E2E | Passed | `frontend/e2e/no-payment.spec.ts` |
 
 ## Project setup
 
@@ -149,5 +171,5 @@ Acceptance criteria covered: 13/40 · passing: 2/40
 | — | test_expense_links_user_and_category_with_exact_amount | Unit | Passed | `backend/tests/unit/test_zzz_diag.py` |
 | — | test_health_reports_ok | Integration | Passed | `backend/tests/integration/test_health.py` |
 | — | test_the_openapi_document_builds | Integration | Passed | `backend/tests/integration/test_health.py` |
-| — | the app loads | E2E | Not run yet | `frontend/e2e/example.spec.ts` |
+| — | the app loads | E2E | Passed | `frontend/e2e/example.spec.ts` |
 <!-- sdlc:auto:end tests -->

@@ -3,59 +3,65 @@
 > Maintained by QuorQ AI SDLC. Text between `sdlc:auto` markers is regenerated; anything outside them is yours and is kept.
 
 <!-- sdlc:auto:start narrative -->
-### DEV-US-001 · draft · source: dev:US-001
+### DEV-US-001 · delivered · source: dev:TICKET-US-001
 
-Ticket for 'Register a new account' failed during this development run; no code was committed.
+Implements new account registration for the expense tracker.
 
-Status: failed. Commit: none. The registration feature (US-001) was not successfully implemented in this run.
+Ticket US-001 (Register a new account) delivered via commit 152660355431e89cdeb36cba9049009382b1a2f4.
 
 **Related:** US-001
 
-### DEV-US-002 · draft · source: dev:US-002
+### DEV-US-002 · delivered · source: dev:TICKET-US-002
 
-Ticket for 'Sign in to my account' was skipped in this development run.
+Implements sign-in to an existing account.
 
-Status: skipped. Commit: none. No implementation work was recorded for sign-in (US-002) in this run.
+Ticket US-002 (Sign in to my account) delivered via commit 152660355431e89cdeb36cba9049009382b1a2f4.
 
 **Related:** US-002
 
-### DEV-US-003 · draft · source: dev:US-003
+### DEV-US-003 · delivered · source: dev:TICKET-US-003
 
-Ticket for 'Sign out and session expiry' was skipped in this development run.
+Implements sign-out and session expiry behavior.
 
-Status: skipped. Commit: none. No implementation work was recorded for sign-out/session expiry (US-003) in this run.
+Ticket US-003 (Sign out and session expiry) delivered via commit 152660355431e89cdeb36cba9049009382b1a2f4.
 
 **Related:** US-003
 
-### DEV-US-004 · draft · source: dev:US-004
+### DEV-US-004 · delivered · source: dev:TICKET-US-004
 
-Ticket for 'Keep my data private to my account' was delivered in this development run.
+Implements data isolation so each account only sees its own data.
 
-Status: delivered. Commit: 608415ce2c838221cd938fc6bab9390b800b9880. Data-privacy functionality for US-004 was implemented and committed.
+Ticket US-004 (Keep my data private to my account) delivered via commit 15215fda3acf85553a78200019a3c0decbcf8ecd.
 
 **Related:** US-004
 
-### DEV-US-005 · draft · source: dev:US-005
+### DEV-US-005 · delivered · source: dev:TICKET-US-005
 
-Ticket for 'Deactivate my account' was skipped in this development run.
+Implements account deactivation.
 
-Status: skipped. Commit: none. No implementation work was recorded for account deactivation (US-005) in this run.
+Ticket US-005 (Deactivate my account) delivered via commit 152660355431e89cdeb36cba9049009382b1a2f4.
 
 **Related:** US-005
 
-### DEV-US-020 · draft · source: dev:US-020
+### DEV-US-020 · delivered · source: dev:TICKET-US-020
 
-Ticket for 'Core data served over REST APIs backed by a database' was delivered in this development run.
+Implements core data access via REST APIs backed by a database.
 
-Status: delivered. Commit: 608415ce2c838221cd938fc6bab9390b800b9880. REST API and database backing for core data (US-020) was implemented and committed, sharing a commit with US-004 and US-021.
+Ticket US-020 (Core data served over REST APIs backed by a database) delivered via commit 15215fda3acf85553a78200019a3c0decbcf8ecd.
 
 **Related:** US-020
 
-### DEV-US-021 · draft · source: dev:US-021
+### DEV-US-021 · delivered · source: dev:TICKET-US-021
 
-Ticket for 'Free to use with no payment processing' was delivered in this development run.
+Implements free-to-use operation with no payment processing.
 
-Status: delivered. Commit: 608415ce2c838221cd938fc6bab9390b800b9880. The no-payment-processing requirement (US-021) was implemented and committed, sharing a commit with US-004 and US-020.
+Ticket US-021 (Free to use with no payment processing) delivered via commit 15215fda3acf85553a78200019a3c0decbcf8ecd.
 
 **Related:** US-021
+
+### DEV-US-FIX-1 · failed · source: dev:TICKET-US-FIX-1
+
+Attempt to fix the scaffold's failing checks did not succeed.
+
+Ticket US-FIX-1 (Fix the scaffold's failing checks) has status=failed with no commit produced.
 <!-- sdlc:auto:end narrative -->

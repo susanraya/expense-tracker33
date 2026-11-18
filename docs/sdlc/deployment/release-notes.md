@@ -7,11 +7,7 @@
 
 **Commit:** `9fddcbc`
 
-**Delivered:**
-- US-001: Register a new account
-- US-004: Keep my data private to my account
-- US-020: Core data served over REST APIs backed by a database
-- US-021: Free to use with no payment processing
+_Nothing delivered in this window._
 
 ## 169463ef1028 — 2026-11-18
 
