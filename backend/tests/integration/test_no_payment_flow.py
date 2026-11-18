@@ -116,3 +116,59 @@ def test_ac038_register_ignores_a_stray_payment_field_rather_than_demanding_one(
     assert body["email"] == email
     assert "card_number" not in body
     assert "plan" not in body
+
+
+def test_ac038_logging_an_expense_ignores_a_stray_payment_field_rather_than_demanding_one(
+    client: TestClient,
+) -> None:
+    """AC-038 names "log expenses" explicitly: creating one never needs, and
+    never echoes back, anything payment-shaped."""
+    email = _email()
+    password = _password()
+    client.post("/auth/register", json={"email": email, "password": password})
+    login = client.post("/auth/login", json={"email": email, "password": password})
+    token = login.json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = client.post(
+        "/expenses",
+        json={
+            "amount": 12.5,
+            "date": "2026-01-15",
+            "description": "Lunch",
+            "card_number": "4242 4242 4242 4242",
+            "plan": "pro",
+        },
+        headers=headers,
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["description"] == "Lunch"
+    assert "card_number" not in body
+    assert "plan" not in body
+    assert "billing" not in body
+
+
+def test_ac038_managing_categories_ignores_a_stray_payment_field_rather_than_demanding_one(
+    client: TestClient,
+) -> None:
+    """Categories are another everyday part of the app AC-038 names ("any part
+    of the app"): creating one carries the same free-to-use guarantee."""
+    email = _email()
+    password = _password()
+    client.post("/auth/register", json={"email": email, "password": password})
+    login = client.post("/auth/login", json={"email": email, "password": password})
+    token = login.json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = client.post(
+        "/categories",
+        json={"name": "Groceries", "card_number": "4242 4242 4242 4242"},
+        headers=headers,
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["name"] == "Groceries"
+    assert "card_number" not in body

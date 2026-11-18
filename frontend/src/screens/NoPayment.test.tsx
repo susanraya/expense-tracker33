@@ -96,6 +96,13 @@ describe("[AC-038] no billing or payment flow", () => {
     assertNoPaymentAsk(container);
   });
 
+  it("managing categories never asks for payment details", () => {
+    setSessionToken("a-test-session-token");
+    const { container } = renderSignedIn("/categories");
+
+    assertNoPaymentAsk(container);
+  });
+
   it("viewing reports never asks for payment details", () => {
     setSessionToken("a-test-session-token");
     const { container } = renderSignedIn("/reports");
