@@ -44,8 +44,30 @@ export function setSessionToken(token: string): void {
 export function clearSessionToken(): void {
   try {
     localStorage.removeItem(SESSION_TOKEN_KEY);
+    localStorage.removeItem(SESSION_EXPIRES_AT_KEY);
   } catch {
     // Nothing to clear if storage was never reachable.
+  }
+}
+
+// The session's expiry, persisted alongside the token at sign-in (AC-007).
+// Never fabricated: a screen that wants a countdown reads this, and shows
+// nothing if it is absent rather than inventing a figure.
+const SESSION_EXPIRES_AT_KEY = "session_expires_at";
+
+export function getSessionExpiresAt(): string | null {
+  try {
+    return localStorage.getItem(SESSION_EXPIRES_AT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setSessionExpiresAt(expiresAt: string): void {
+  try {
+    localStorage.setItem(SESSION_EXPIRES_AT_KEY, expiresAt);
+  } catch {
+    // Storage unavailable: the countdown just won't persist across reloads.
   }
 }
 

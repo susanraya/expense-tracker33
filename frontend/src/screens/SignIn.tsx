@@ -133,7 +133,7 @@ export default function Screen() {
         method: "POST",
         body: JSON.stringify({ email: trimmed, password }),
       });
-      signIn(result.token);
+      signIn(result.token, result.expires_at);
       setPhase("success");
       setMessage(
         registering
