@@ -48,6 +48,11 @@ class User(Base):
     email: Mapped[str] = mapped_column(_CaseInsensitiveEmail, nullable=False, unique=True)
     password_hash: Mapped[str] = mapped_column(String, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # Only two roles exist: "admin" (the seeded bootstrap account, the highest) and
+    # "user" (everyone else, including the seeded smoke-test account, the lowest).
+    role: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="user", server_default="user"
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_utcnow
     )

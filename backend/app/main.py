@@ -9,33 +9,57 @@ OpenAPI document and passes its tests before a single handler is implemented.
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
+from alembic import command
+from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import text
+from sqlalchemy import inspect
 
-from app import models  # noqa: F401 -- imported so the tables register before create_all
-from app.database import Base, SessionLocal, engine
+from app import models  # noqa: F401 -- imported so the tables register for Alembic
+from app.database import SessionLocal, engine
+from app.routers import account, auth
 from app.seed import seed_bootstrap_users
+
+_BACKEND_DIR = Path(__file__).resolve().parent.parent
+
+
+def _run_migrations() -> None:
+    """Applies every Alembic migration up to `head`. The schema is created and
+    changed only this way -- never by `Base.metadata.create_all` -- so a
+    deployment's tables always match the versioned history in `migrations/`.
+
+    A pre-existing database file (a stale dev/e2e SQLite file left over from
+    before migrations existed, or from a run that created tables without
+    stamping) can already hold every table migration 0001 would create, but
+    with no `alembic_version` row. Re-running `upgrade` against that database
+    tries to create tables that are already there and dies. When that is the
+    situation -- the target tables exist but Alembic has no version stamped --
+    we stamp the database at `head` instead of re-running the migrations,
+    since the schema already matches it.
+    """
+    config = Config(str(_BACKEND_DIR / "alembic.ini"))
+    config.set_main_option("script_location", str(_BACKEND_DIR / "migrations"))
+
+    inspector = inspect(engine)
+    existing_tables = set(inspector.get_table_names())
+    expected_tables = {"users", "sessions", "categories", "expenses"}
+    if expected_tables.issubset(existing_tables) and "alembic_version" not in existing_tables:
+        command.stamp(config, "head")
+        return
+
+    command.upgrade(config, "head")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """The scaffold ships no migrations, so the tables are created from the models
-    when the application starts. Replace this with Alembic before anything holds data
-    worth keeping.
-
-    This runs on startup and not at import, so importing the application never opens a
+    """This runs on startup and not at import, so importing the application never opens a
     connection. A test can therefore point `get_db` at a database of its own, and a
     deployment whose `DATABASE_URL` names a server that is not up fails where you can
     read the error, not while pytest collects the files.
     """
-    if engine.dialect.name == "postgresql":
-        # `users.email` is `citext` (case-insensitive) in the approved data model;
-        # the type only exists once this extension is installed in the database.
-        with engine.begin() as conn:
-            conn.execute(text("CREATE EXTENSION IF NOT EXISTS citext"))
-    Base.metadata.create_all(bind=engine)
+    _run_migrations()
     with SessionLocal() as session:
         seed_bootstrap_users(session)
     yield
@@ -61,6 +85,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(auth.router)
+app.include_router(account.router)
 
 
 @app.get("/health")
