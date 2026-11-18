@@ -1,16 +1,14 @@
 // @ts-nocheck -- generated from the approved design under its JS runtime contract; not hand-written TypeScript.
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
 
 import * as UI from "@/lib/ui";
 import { Icons } from "@/lib/icons";
 import { brand } from "@/lib/brand";
-import { useNavigate } from "@/lib/navigate";
 import { useAuth } from "@/lib/auth";
 
 const { Button, Card, CardHeader, CardContent, Label, Checkbox, Badge } = UI;
 
-const { Check, X, ChevronDown, User, Clock, Edit, ArrowRight, AlertCircle, CheckCircle } = Icons;
+const { Check, X, ChevronDown, User, Clock, ArrowRight, AlertCircle, CheckCircle } = Icons;
 
 const ACCOUNT = {
   name: "Susan Raya",
@@ -80,7 +78,6 @@ const DOCS = [
 ];
 
 export default function Screen() {
-  const navigate = useNavigate();
   const { signOut, deactivate } = useAuth();
   const [remaining, setRemaining] = React.useState(INITIAL_REMAINING);
   const [signOutState, setSignOutState] = React.useState("idle");
@@ -90,15 +87,9 @@ export default function Screen() {
   const [deactivateState, setDeactivateState] = React.useState("idle");
   const [openDoc, setOpenDoc] = React.useState("i-6-0-0");
 
-  const timers = React.useRef([]);
   const dialogRef = React.useRef(null);
   const deactivateTriggerRef = React.useRef(null);
   const ackRef = React.useRef(null);
-
-  const after = (ms, fn) => {
-    const t = window.setTimeout(fn, ms);
-    timers.current.push(t);
-  };
 
   React.useEffect(() => {
     const tick = window.setInterval(() => {
@@ -106,8 +97,6 @@ export default function Screen() {
     }, 1000);
     return () => window.clearInterval(tick);
   }, []);
-
-  React.useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), []);
 
   React.useEffect(() => {
     if (!modalOpen) return undefined;

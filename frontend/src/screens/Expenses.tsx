@@ -5,21 +5,17 @@ import React from "react";
 import * as UI from "@/lib/ui";
 import { Icons } from "@/lib/icons";
 import { brand } from "@/lib/brand";
-import { useNavigate } from "@/lib/navigate";
 import { apiFetch, ApiError } from "@/lib/api";
 
 const {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
-  CardFooter,
   Input,
   Textarea,
   Label,
   Select,
-  Badge,
   Table,
   THead,
   TBody,
@@ -30,7 +26,7 @@ const {
   Button,
 } = UI;
 
-const { Edit, Filter, Plus, Trash, AlertCircle } = Icons;
+const { Edit, Trash, AlertCircle } = Icons;
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -42,7 +38,6 @@ function startOfMonthIso() {
 }
 
 export default function Screen() {
-  const navigate = useNavigate();
   const ink = "#eaf3ff";
   const glass = {
     backgroundColor: "rgba(255,255,255,0.055)",

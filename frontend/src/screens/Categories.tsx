@@ -5,12 +5,11 @@ import React from "react";
 import * as UI from "@/lib/ui";
 import { Icons } from "@/lib/icons";
 import { brand } from "@/lib/brand";
-import { useNavigate } from "@/lib/navigate";
 import { apiFetch, ApiError } from "@/lib/api";
 
 const { Button, Input, Label, Badge, Table, THead, TBody, TR, TH, TD, Empty } = UI;
 
-const { Plus, Check, Clock, Trash, Edit, AlertCircle, CheckCircle } = Icons;
+const { Plus, Trash, Edit, AlertCircle, CheckCircle } = Icons;
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -37,7 +36,6 @@ function hexToRgba(hex, alpha) {
 }
 
 export default function Screen() {
-  const navigate = useNavigate();
   const glass = {
     backgroundColor: "rgba(255,255,255,0.06)",
     border: "1px solid rgba(255,255,255,0.13)",

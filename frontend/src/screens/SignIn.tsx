@@ -9,9 +9,7 @@ import { useNavigate } from "@/lib/navigate";
 import { apiFetch, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
-const { Switch } = UI;
-
-const { Check, Clock, ArrowLeft, ArrowRight, AlertCircle, CheckCircle } = Icons;
+const { Check, Clock, ArrowRight, AlertCircle, CheckCircle } = Icons;
 
 const PRODUCT = "expense tracker";
 
