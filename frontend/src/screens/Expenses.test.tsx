@@ -141,7 +141,7 @@ describe("Expenses", () => {
   });
 
   it("[AC-012] empty, non-numeric and non-positive amount, and empty date, each show a field message and block submission", async () => {
-    const fetchMock = vi.fn((url: string) => {
+    const fetchMock = vi.fn((url: string, init?: RequestInit) => {
       if (String(url).includes("/expenses?")) return jsonResponse(200, { items: [], total: 0 });
       if (String(url).includes("/categories")) return jsonResponse(200, [CATEGORY]);
       return jsonResponse(404, { detail: "not found" });

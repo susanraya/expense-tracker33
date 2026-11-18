@@ -5,15 +5,23 @@ import * as UI from "@/lib/ui";
 import { Icons } from "@/lib/icons";
 import { brand } from "@/lib/brand";
 import { useAuth } from "@/lib/auth";
+import { apiFetch } from "@/lib/api";
 
 const { Button, Card, CardHeader, CardContent, Label, Checkbox, Badge } = UI;
 
 const { Check, X, ChevronDown, User, Clock, ArrowRight, AlertCircle, CheckCircle } = Icons;
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function fmtDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 const ACCOUNT = {
   name: "Susan Raya",
-  email: "susan.raya@quorq.ai",
-  createdAt: "04 Mar 2026",
   lastSignIn: "18 Nov 2026 · 08:42",
   device: "Chrome 131 on macOS · Lisbon",
   expenses: 148,
@@ -79,6 +87,8 @@ const DOCS = [
 
 export default function Screen() {
   const { signOut, deactivate } = useAuth();
+  const [meStatus, setMeStatus] = React.useState("loading");
+  const [me, setMe] = React.useState({ email: "", createdAt: "" });
   const [remaining, setRemaining] = React.useState(INITIAL_REMAINING);
   const [signOutState, setSignOutState] = React.useState("idle");
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -90,6 +100,24 @@ export default function Screen() {
   const dialogRef = React.useRef(null);
   const deactivateTriggerRef = React.useRef(null);
   const ackRef = React.useRef(null);
+
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const data = await apiFetch("/auth/me");
+        if (!alive) return;
+        setMe({ email: data.email, createdAt: data.created_at });
+        setMeStatus("ready");
+      } catch {
+        if (!alive) return;
+        setMeStatus("error");
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   React.useEffect(() => {
     const tick = window.setInterval(() => {
@@ -245,23 +273,39 @@ export default function Screen() {
                   <User className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div className="min-w-0">
-                  <h2 className="min-w-0">
-                    <span
-                      className="block text-[13px] font-semibold uppercase tracking-[0.14em]"
+                  {meStatus === "loading" ? (
+                    <p
+                      role="status"
+                      aria-live="polite"
+                      className="text-[15px]"
                       style={{ color: brand.neutralColor }}
                     >
-                      {"Signed in as "}
-                    </span>
-                    <span
-                      className="block mt-1 text-[19px] font-semibold break-all leading-snug"
-                      style={{ fontFamily: brand.fontHeading }}
-                    >
-                      {ACCOUNT.email}
-                    </span>
-                  </h2>
-                  <p className="mt-1 text-[14px]" style={{ color: brand.neutralColor, ...num }}>
-                    Account created {ACCOUNT.createdAt}
-                  </p>
+                      Loading your account details…
+                    </p>
+                  ) : (
+                    <>
+                      <h2 className="min-w-0">
+                        <span
+                          className="block text-[13px] font-semibold uppercase tracking-[0.14em]"
+                          style={{ color: brand.neutralColor }}
+                        >
+                          {"Signed in as "}
+                        </span>
+                        <span
+                          className="block mt-1 text-[19px] font-semibold break-all leading-snug"
+                          style={{ fontFamily: brand.fontHeading }}
+                        >
+                          {me.email}
+                        </span>
+                      </h2>
+                      <p
+                        className="mt-1 text-[14px]"
+                        style={{ color: brand.neutralColor, ...num }}
+                      >
+                        Account created {fmtDate(me.createdAt)}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             </CardHeader>
