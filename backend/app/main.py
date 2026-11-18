@@ -16,6 +16,7 @@ from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import MetaData, inspect
+from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from app import models  # noqa: F401 -- imported so the tables register for Alembic
 from app.database import SessionLocal, engine
@@ -38,6 +39,13 @@ def _run_migrations() -> None:
     situation -- the target tables exist but Alembic has no version stamped --
     we stamp the database at `head` instead of re-running the migrations,
     since the schema already matches it.
+
+    A second case is a live race rather than a stale file: another process
+    (a concurrently started worker against the same database, as happens in
+    an e2e run) can create the schema *between* our inspection below and our
+    own `command.upgrade` call. Our own CREATE TABLE then fails with
+    "already exists" even though the schema now matches head -- we stamp
+    instead of letting that crash the process that lost the race.
     """
     config = Config(str(_BACKEND_DIR / "alembic.ini"))
     config.set_main_option("script_location", str(_BACKEND_DIR / "migrations"))
@@ -59,7 +67,12 @@ def _run_migrations() -> None:
         reflected.reflect(bind=engine)
         reflected.drop_all(bind=engine)
 
-    command.upgrade(config, "head")
+    try:
+        command.upgrade(config, "head")
+    except (OperationalError, ProgrammingError) as exc:
+        if "already exists" not in str(exc).lower():
+            raise
+        command.stamp(config, "head")
 
 
 @asynccontextmanager
