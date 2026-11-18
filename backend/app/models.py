@@ -104,13 +104,14 @@ class Category(Base):
         Uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    color: Mapped[str | None] = mapped_column(String(20), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=_utcnow
     )
 
     user: Mapped["User"] = relationship(back_populates="categories")
-    # No cascade here: a category with expenses must be blocked from deleting
-    # (AC in the ticket), not silently take its expenses with it.
+    # SET NULL rather than cascade: deleting a category must not delete the
+    # expenses that reference it -- they just lose their category.
     expenses: Mapped[list["Expense"]] = relationship(back_populates="category")
 
 
@@ -121,8 +122,8 @@ class Expense(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    category_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(), ForeignKey("categories.id", ondelete="RESTRICT"), nullable=False, index=True
+    category_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(), ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True
     )
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     spent_on: Mapped[date] = mapped_column(Date, nullable=False)
@@ -138,7 +139,7 @@ class Expense(Base):
     )
 
     user: Mapped["User"] = relationship(back_populates="expenses")
-    category: Mapped["Category"] = relationship(back_populates="expenses")
+    category: Mapped["Category | None"] = relationship(back_populates="expenses")
 
 
 __all__ = ["Base", "User", "UserSession", "Category", "Expense"]

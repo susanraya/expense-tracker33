@@ -5,9 +5,11 @@ generated route returns until it has been implemented.
 """
 
 import re
+from datetime import date as _date
 from datetime import datetime
+from decimal import Decimal
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_serializer, field_validator
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
@@ -71,6 +73,104 @@ class LoginResponse(BaseModel):
     token: str
     expires_at: datetime
     user: LoginUser
+
+
+def _validate_category_name(value: str) -> str:
+    value = value.strip()
+    if not value:
+        raise ValueError("name must not be empty")
+    if len(value) > 100:
+        raise ValueError("name must be at most 100 characters long")
+    return value
+
+
+class CategoryOut(BaseModel):
+    id: str
+    name: str
+    color: str | None = None
+    created_at: datetime
+
+
+class CategoryCreate(BaseModel):
+    """POST /categories body (AC-036)."""
+
+    name: str
+    color: str | None = None
+
+    @field_validator("name")
+    @classmethod
+    def _check_name(cls, value: str) -> str:
+        return _validate_category_name(value)
+
+
+class CategoryUpdate(BaseModel):
+    """PATCH /categories/{id} body: both fields optional."""
+
+    name: str | None = None
+    color: str | None = None
+
+    @field_validator("name")
+    @classmethod
+    def _check_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        return _validate_category_name(value)
+
+
+def _validate_amount(value: Decimal) -> Decimal:
+    if value <= 0:
+        raise ValueError("amount must be greater than 0")
+    return value
+
+
+class ExpenseOut(BaseModel):
+    id: str
+    amount: Decimal
+    date: _date
+    description: str
+    category_id: str | None = None
+    category_name: str | None = None
+    created_at: datetime
+
+    @field_serializer("amount")
+    def _serialize_amount(self, value: Decimal) -> float:
+        """Serialised as a plain number; storage keeps the exact Decimal."""
+        return float(value)
+
+
+class ExpenseCreate(BaseModel):
+    """POST /expenses body."""
+
+    amount: Decimal
+    date: _date
+    description: str
+    category_id: str | None = None
+
+    @field_validator("amount")
+    @classmethod
+    def _check_amount(cls, value: Decimal) -> Decimal:
+        return _validate_amount(value)
+
+
+class ExpenseUpdate(BaseModel):
+    """PATCH /expenses/{id} body: every field optional."""
+
+    amount: Decimal | None = None
+    date: _date | None = None
+    description: str | None = None
+    category_id: str | None = None
+
+    @field_validator("amount")
+    @classmethod
+    def _check_amount(cls, value: Decimal | None) -> Decimal | None:
+        if value is None:
+            return value
+        return _validate_amount(value)
+
+
+class ExpenseListOut(BaseModel):
+    items: list[ExpenseOut]
+    total: int
 
 
 class StubResponse(BaseModel):

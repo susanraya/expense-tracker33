@@ -15,11 +15,11 @@ from alembic import command
 from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import inspect
+from sqlalchemy import MetaData, inspect
 
 from app import models  # noqa: F401 -- imported so the tables register for Alembic
 from app.database import SessionLocal, engine
-from app.routers import account, auth
+from app.routers import account, auth, categories, expenses
 from app.seed import seed_bootstrap_users
 
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -48,6 +48,16 @@ def _run_migrations() -> None:
     if expected_tables.issubset(existing_tables) and "alembic_version" not in existing_tables:
         command.stamp(config, "head")
         return
+
+    if existing_tables & expected_tables and "alembic_version" not in existing_tables:
+        # A partial schema left by an earlier interrupted run (some but not all
+        # expected tables, no version stamped) collides with migration 0001's
+        # own CREATE TABLE statements. Drop whatever is there so the migrations
+        # can build every table cleanly instead of failing on one that already
+        # exists.
+        reflected = MetaData()
+        reflected.reflect(bind=engine)
+        reflected.drop_all(bind=engine)
 
     command.upgrade(config, "head")
 
@@ -89,6 +99,8 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(account.router)
+app.include_router(categories.router)
+app.include_router(expenses.router)
 
 
 @app.get("/health")
