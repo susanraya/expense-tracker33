@@ -158,7 +158,8 @@ describe("Categories", () => {
   });
 
   it("[AC-036] cancelling a delete sends no request and keeps the category", async () => {
-    const fetchMock = vi.fn((url: string) => {
+    const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+      void init;
       if (String(url).includes("/categories")) {
         return jsonResponse(200, [
           { id: "cat_1", name: "Travel", color: null, created_at: "2026-11-01T00:00:00Z" },
