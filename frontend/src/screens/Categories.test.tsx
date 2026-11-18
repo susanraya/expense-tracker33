@@ -126,7 +126,7 @@ describe("Categories", () => {
     await waitFor(() => expect(screen.getByText("That name is already taken")).toBeInTheDocument());
   });
 
-  it("[AC-036] deleting a category calls DELETE /categories/{id} and removes it from the list", async () => {
+  it("[AC-036] confirming delete calls DELETE /categories/{id}, removes it from the list and shows success", async () => {
     const fetchMock = vi.fn((url: string, init?: RequestInit) => {
       if (String(url).includes("/categories/cat_1") && init?.method === "DELETE") {
         return jsonResponse(204, null);
@@ -145,8 +145,72 @@ describe("Categories", () => {
     await waitFor(() => expect(screen.getByText("Travel")).toBeInTheDocument());
 
     await user.click(screen.getByRole("button", { name: "Delete Travel" }));
+    expect(
+      fetchMock.mock.calls.some(
+        ([, init]) => (init as RequestInit | undefined)?.method === "DELETE",
+      ),
+    ).toBe(false);
+
+    await user.click(screen.getByRole("button", { name: "Confirm delete Travel" }));
 
     await waitFor(() => expect(screen.queryByText("Travel")).not.toBeInTheDocument());
+    expect(screen.getByText("Category deleted")).toBeInTheDocument();
+  });
+
+  it("[AC-036] cancelling a delete sends no request and keeps the category", async () => {
+    const fetchMock = vi.fn((url: string) => {
+      if (String(url).includes("/categories")) {
+        return jsonResponse(200, [
+          { id: "cat_1", name: "Travel", color: null, created_at: "2026-11-01T00:00:00Z" },
+        ]);
+      }
+      return jsonResponse(404, { detail: "not found" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    renderCategories();
+    await waitFor(() => expect(screen.getByText("Travel")).toBeInTheDocument());
+
+    await user.click(screen.getByRole("button", { name: "Delete Travel" }));
+    await user.click(screen.getByRole("button", { name: "Cancel delete Travel" }));
+
+    expect(screen.getByText("Travel")).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(
+        ([, init]) => (init as RequestInit | undefined)?.method === "DELETE",
+      ),
+    ).toBe(false);
+  });
+
+  it("[AC-036] a 409 on confirmed delete warns that the category still has expenses and keeps it in the list", async () => {
+    const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+      if (String(url).includes("/categories/cat_1") && init?.method === "DELETE") {
+        return jsonResponse(409, {
+          detail:
+            "3 expense(s) still use this category. Reassign or delete them first, then delete the category.",
+        });
+      }
+      if (String(url).includes("/categories")) {
+        return jsonResponse(200, [
+          { id: "cat_1", name: "Travel", color: null, created_at: "2026-11-01T00:00:00Z" },
+        ]);
+      }
+      return jsonResponse(404, { detail: "not found" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    renderCategories();
+    await waitFor(() => expect(screen.getByText("Travel")).toBeInTheDocument());
+
+    await user.click(screen.getByRole("button", { name: "Delete Travel" }));
+    await user.click(screen.getByRole("button", { name: "Confirm delete Travel" }));
+
+    await waitFor(() => expect(screen.getByText("Can’t delete “Travel”")).toBeInTheDocument());
+    expect(screen.getByText(/still has expenses assigned to it/)).toBeInTheDocument();
+    expect(screen.getByText(/Reassign those expenses/)).toBeInTheDocument();
+    expect(screen.getByText("Travel")).toBeInTheDocument();
   });
 
   it("[AC-009] a 401 clears the stored token and redirects to sign-in", async () => {

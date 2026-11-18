@@ -8,13 +8,13 @@ missing one, so a mismatch is a 404, never a 403.
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
 from app.database import get_db
-from app.models import Category, User
+from app.models import Category, Expense, User
 from app.schemas import CategoryCreate, CategoryOut, CategoryUpdate
 
 router = APIRouter(prefix="/categories", tags=["categories"])
@@ -108,7 +108,25 @@ def update_category(
 def delete_category(
     category_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ) -> None:
-    """AC-008: deletes only the caller's category; another user's id is 404."""
+    """AC-008/AC-019 to AC-023: deletes only the caller's category; another
+    user's id is 404. A category still referenced by one or more of the
+    caller's expenses is a 409 naming the count -- counted here in the
+    router rather than relying on a DB cascade or ON DELETE SET NULL, so
+    nothing is ever silently nulled out."""
     category = _get_owned_category(db, user, category_id)
+    expense_count = db.execute(
+        select(func.count())
+        .select_from(Expense)
+        .where(Expense.category_id == category.id, Expense.user_id == user.id)
+    ).scalar_one()
+    if expense_count > 0:
+        plural = "s" if expense_count != 1 else ""
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"{expense_count} expense{plural} still use this category. "
+                "Reassign or delete them first, then delete the category."
+            ),
+        )
     db.delete(category)
     db.commit()

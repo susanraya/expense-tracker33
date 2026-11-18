@@ -1,13 +1,15 @@
 // @ts-nocheck -- generated from the approved design under its JS runtime contract; not hand-written TypeScript.
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
 
+import * as UI from "@/lib/ui";
 import { Icons } from "@/lib/icons";
 import { brand } from "@/lib/brand";
 import { useNavigate } from "@/lib/navigate";
 import { apiFetch, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
-const { Check, Clock, AlertCircle, CheckCircle } = Icons;
+const { Check, Clock, ArrowRight, AlertCircle, CheckCircle } = Icons;
 
 const PRODUCT = "expense tracker";
 
@@ -131,7 +133,7 @@ export default function Screen() {
         method: "POST",
         body: JSON.stringify({ email: trimmed, password }),
       });
-      signIn(result.token, result.expires_at);
+      signIn(result.token);
       setPhase("success");
       setMessage(
         registering

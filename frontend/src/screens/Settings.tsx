@@ -11,15 +11,26 @@ const { Button, Card, CardHeader, CardContent, Label, Checkbox, Badge } = UI;
 
 const { Check, X, ChevronDown, User, Clock, ArrowRight, AlertCircle, CheckCircle } = Icons;
 
-const SESSION_WINDOW_SECONDS = 30 * 60;
-
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function fmtDate(iso) {
+  if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
+
+const ACCOUNT = {
+  name: "Susan Raya",
+  lastSignIn: "18 Nov 2026 · 08:42",
+  device: "Chrome 131 on macOS · Lisbon",
+  expenses: 148,
+  categories: 9,
+  refreshedMinutesAgo: 4,
+};
+
+const SESSION_WINDOW_SECONDS = 30 * 60;
+const INITIAL_REMAINING = 1572; // 26:12 left of the 30 minute inactivity window
 
 const DOCS = [
   {
@@ -75,7 +86,10 @@ const DOCS = [
 ];
 
 export default function Screen() {
-  const { signOut, deactivate, expiresAt } = useAuth();
+  const { signOut, deactivate } = useAuth();
+  const [meStatus, setMeStatus] = React.useState("loading");
+  const [me, setMe] = React.useState({ email: "", createdAt: "" });
+  const [remaining, setRemaining] = React.useState(INITIAL_REMAINING);
   const [signOutState, setSignOutState] = React.useState("idle");
   const [modalOpen, setModalOpen] = React.useState(false);
   const [acknowledged, setAcknowledged] = React.useState(false);
@@ -83,61 +97,34 @@ export default function Screen() {
   const [deactivateState, setDeactivateState] = React.useState("idle");
   const [openDoc, setOpenDoc] = React.useState("i-6-0-0");
 
-  // 'loading' | 'ready' | 'error'
-  const [meStatus, setMeStatus] = React.useState("loading");
-  const [me, setMe] = React.useState(null); // {email, created_at}
-
-  // Counts shown in the deactivation confirmation, so the warning names what
-  // is actually at stake rather than a vague "your data". Defaults to 0 while
-  // loading or on failure: any digit satisfies the confirmation copy.
-  const [counts, setCounts] = React.useState({ expenses: 0, categories: 0 });
-
-  const loadMe = React.useCallback(async () => {
-    setMeStatus("loading");
-    try {
-      const data = await apiFetch("/auth/me");
-      setMe(data);
-      setMeStatus("ready");
-    } catch {
-      setMeStatus("error");
-    }
-  }, []);
-
-  const loadCounts = React.useCallback(async () => {
-    try {
-      const [expenseList, categories] = await Promise.all([
-        apiFetch("/expenses?limit=1"),
-        apiFetch("/categories"),
-      ]);
-      setCounts({
-        expenses: expenseList?.total ?? 0,
-        categories: Array.isArray(categories) ? categories.length : 0,
-      });
-    } catch {
-      setCounts({ expenses: 0, categories: 0 });
-    }
-  }, []);
-
-  React.useEffect(() => {
-    loadMe();
-    loadCounts();
-  }, [loadMe, loadCounts]);
-
-  const expiresAtMs = expiresAt ? new Date(expiresAt).getTime() : null;
-  const hasExpiry = expiresAtMs !== null && !Number.isNaN(expiresAtMs);
-  const [now, setNow] = React.useState(() => Date.now());
-
   const dialogRef = React.useRef(null);
   const deactivateTriggerRef = React.useRef(null);
   const ackRef = React.useRef(null);
 
   React.useEffect(() => {
-    if (!hasExpiry) return undefined;
+    let alive = true;
+    (async () => {
+      try {
+        const data = await apiFetch("/auth/me");
+        if (!alive) return;
+        setMe({ email: data.email, createdAt: data.created_at });
+        setMeStatus("ready");
+      } catch {
+        if (!alive) return;
+        setMeStatus("error");
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  React.useEffect(() => {
     const tick = window.setInterval(() => {
-      setNow(Date.now());
+      setRemaining((r) => (r > 0 ? r - 1 : 0));
     }, 1000);
     return () => window.clearInterval(tick);
-  }, [hasExpiry]);
+  }, []);
 
   React.useEffect(() => {
     if (!modalOpen) return undefined;
@@ -199,11 +186,10 @@ export default function Screen() {
     });
   };
 
-  const remaining = hasExpiry ? Math.max(0, Math.round((expiresAtMs - now) / 1000)) : 0;
   const mm = String(Math.floor(remaining / 60)).padStart(2, "0");
   const ss = String(remaining % 60).padStart(2, "0");
   const pct = Math.max(0, Math.min(100, (remaining / SESSION_WINDOW_SECONDS) * 100));
-  const expired = hasExpiry && remaining <= 0;
+  const expired = remaining <= 0;
 
   const surface = "rgba(255,255,255,0.06)";
   const surfaceHi = "rgba(255,255,255,0.09)";
@@ -286,62 +272,90 @@ export default function Screen() {
                 >
                   <User className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <div className="min-w-0 flex-1">
-                  {meStatus === "loading" && (
+                <div className="min-w-0">
+                  {meStatus === "loading" ? (
                     <p
                       role="status"
                       aria-live="polite"
-                      className="text-[14px]"
+                      className="text-[15px]"
                       style={{ color: brand.neutralColor }}
                     >
                       Loading your account details…
                     </p>
-                  )}
-                  {meStatus === "error" && (
-                    <div>
-                      <p className="text-[14px] font-semibold" style={{ color: danger }}>
-                        We couldn’t load your account details
-                      </p>
-                      <Button
-                        type="button"
-                        onClick={loadMe}
-                        className="np-trans mt-3 h-9 px-4 text-[13px] font-semibold"
-                        style={{
-                          borderRadius: 10,
-                          backgroundColor: "rgba(255,255,255,0.05)",
-                          border: `1px solid ${line}`,
-                          color: "#ffffff",
-                        }}
-                      >
-                        Try again
-                      </Button>
-                    </div>
-                  )}
-                  {meStatus === "ready" && me && (
-                    <h2 className="min-w-0">
-                      <span
-                        className="block text-[13px] font-semibold uppercase tracking-[0.14em]"
-                        style={{ color: brand.neutralColor }}
-                      >
-                        {"Signed in as "}
-                      </span>
-                      <span
-                        className="block mt-1 text-[19px] font-semibold break-all leading-snug"
-                        style={{ fontFamily: brand.fontHeading }}
-                      >
-                        {me.email}
-                      </span>
-                      <span
-                        className="block mt-1 text-[14px]"
+                  ) : (
+                    <>
+                      <h2 className="min-w-0">
+                        <span
+                          className="block text-[13px] font-semibold uppercase tracking-[0.14em]"
+                          style={{ color: brand.neutralColor }}
+                        >
+                          {"Signed in as "}
+                        </span>
+                        <span
+                          className="block mt-1 text-[19px] font-semibold break-all leading-snug"
+                          style={{ fontFamily: brand.fontHeading }}
+                        >
+                          {me.email}
+                        </span>
+                      </h2>
+                      <p
+                        className="mt-1 text-[14px]"
                         style={{ color: brand.neutralColor, ...num }}
                       >
-                        Account created {fmtDate(me.created_at)}
-                      </span>
-                    </h2>
+                        Account created {fmtDate(me.createdAt)}
+                      </p>
+                    </>
                   )}
                 </div>
               </div>
             </CardHeader>
+            <CardContent className="px-6 pb-6 pt-0">
+              <div
+                style={{ borderTop: `1px solid ${line}` }}
+                className="pt-5 flex flex-wrap items-center gap-x-8 gap-y-4"
+              >
+                <div>
+                  <p
+                    className="text-[12px] uppercase tracking-[0.12em]"
+                    style={{ color: brand.neutralColor }}
+                  >
+                    Expenses logged
+                  </p>
+                  <p className="text-[22px] font-bold" style={num}>
+                    {ACCOUNT.expenses}
+                  </p>
+                </div>
+                <div>
+                  <p
+                    className="text-[12px] uppercase tracking-[0.12em]"
+                    style={{ color: brand.neutralColor }}
+                  >
+                    Categories
+                  </p>
+                  <p className="text-[22px] font-bold" style={num}>
+                    {ACCOUNT.categories}
+                  </p>
+                </div>
+                <div className="min-w-0">
+                  <p
+                    className="text-[12px] uppercase tracking-[0.12em]"
+                    style={{ color: brand.neutralColor }}
+                  >
+                    Last sign-in
+                  </p>
+                  <p className="text-[15px] font-medium" style={num}>
+                    {ACCOUNT.lastSignIn}
+                  </p>
+                </div>
+              </div>
+              <p
+                className="mt-5 text-[13px] flex items-center gap-2"
+                style={{ color: brand.neutralColor }}
+              >
+                <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                Details last refreshed {ACCOUNT.refreshedMinutesAgo} minutes ago
+              </p>
+            </CardContent>
           </Card>
 
           <Card className="np-rise overflow-hidden" style={cardStyle} data-wf="b-1-1">
@@ -366,24 +380,7 @@ export default function Screen() {
               </div>
             </CardHeader>
             <CardContent className="px-6 pb-6 pt-0">
-              {!hasExpiry && (
-                <div>
-                  <p
-                    className="text-[19px] font-semibold leading-snug"
-                    style={{ fontFamily: brand.fontHeading }}
-                  >
-                    Session active
-                  </p>
-                  <p
-                    className="mt-2 text-[14px] leading-relaxed"
-                    style={{ color: brand.neutralColor }}
-                  >
-                    We don't have an expiry time for this session, so we can't show a countdown.
-                  </p>
-                </div>
-              )}
-
-              {hasExpiry && expired && (
+              {expired ? (
                 <div>
                   <p
                     className="text-[19px] font-semibold leading-snug"
@@ -399,9 +396,7 @@ export default function Screen() {
                     left off.
                   </p>
                 </div>
-              )}
-
-              {hasExpiry && !expired && (
+              ) : (
                 <div>
                   <p
                     className="text-[44px] font-bold leading-none"
@@ -417,34 +412,36 @@ export default function Screen() {
                 </div>
               )}
 
-              {hasExpiry && (
+              {/* signature pulse rail */}
+              <div
+                className="mt-5 relative h-[6px] w-full overflow-hidden"
+                style={{ borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)" }}
+                aria-hidden="true"
+              >
                 <div
-                  className="mt-5 relative h-[6px] w-full overflow-hidden"
-                  style={{ borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)" }}
-                  aria-hidden="true"
-                >
-                  <div
-                    className="np-trans h-full"
+                  className="np-trans h-full"
+                  style={{
+                    width: `${expired ? 0 : pct}%`,
+                    borderRadius: 999,
+                    background: `linear-gradient(90deg, ${brand.primaryColor}, ${brand.accentColor})`,
+                    boxShadow: `0 0 24px 0 ${brand.accentColor}`,
+                  }}
+                />
+                {!expired && (
+                  <span
+                    className="np-pulse absolute inset-y-0 left-0 w-10"
                     style={{
-                      width: `${expired ? 0 : pct}%`,
-                      borderRadius: 999,
-                      background: `linear-gradient(90deg, ${brand.primaryColor}, ${brand.accentColor})`,
-                      boxShadow: `0 0 24px 0 ${brand.accentColor}`,
+                      background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent)`,
                     }}
                   />
-                  {!expired && (
-                    <span
-                      className="np-pulse absolute inset-y-0 left-0 w-10"
-                      style={{
-                        background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent)`,
-                      }}
-                    />
-                  )}
-                </div>
-              )}
+                )}
+              </div>
 
               <p className="mt-5 text-[15px] leading-relaxed">
                 Session ends after 30 minutes of inactivity
+              </p>
+              <p className="mt-2 text-[13px]" style={{ color: brand.neutralColor }}>
+                {ACCOUNT.device}
               </p>
             </CardContent>
           </Card>
@@ -584,8 +581,8 @@ export default function Screen() {
                   htmlFor="deactivate-ack"
                   className="text-[14px] leading-relaxed cursor-pointer"
                 >
-                  I understand that my {counts.expenses} expenses and {counts.categories} categories
-                  stay locked to a closed account, and this cannot be undone from inside the app.
+                  I understand that {ACCOUNT.expenses} expenses and {ACCOUNT.categories} categories
+                  stay locked to a closed account.
                 </Label>
               </div>
 

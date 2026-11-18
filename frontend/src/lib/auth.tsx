@@ -4,9 +4,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import {
   apiFetch,
   clearSessionToken,
-  getSessionExpiresAt,
   getSessionToken,
-  setSessionExpiresAt,
   setSessionToken,
   setUnauthorizedHandler,
 } from "@/lib/api";
@@ -17,37 +15,30 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   notice: string | null;
   clearNotice: () => void;
-  signIn: (token: string, expiresAt?: string) => void;
+  signIn: (token: string) => void;
   signOut: () => Promise<void>;
   deactivate: () => Promise<void>;
-  expiresAt: string | null;
 };
 
 const AuthContext = React.createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = React.useState<string | null>(() => getSessionToken());
-  const [expiresAt, setExpiresAt] = React.useState<string | null>(() => getSessionExpiresAt());
   const [notice, setNotice] = React.useState<string | null>(null);
   const navigate = useNavigate();
 
   React.useEffect(() => {
     setUnauthorizedHandler(() => {
       setToken(null);
-      setExpiresAt(null);
       setNotice("Your session expired, please sign in again.");
       navigate("/sign-in");
     });
     return () => setUnauthorizedHandler(null);
   }, [navigate]);
 
-  const signIn = React.useCallback((newToken: string, newExpiresAt?: string) => {
+  const signIn = React.useCallback((newToken: string) => {
     setSessionToken(newToken);
     setToken(newToken);
-    if (newExpiresAt) {
-      setSessionExpiresAt(newExpiresAt);
-      setExpiresAt(newExpiresAt);
-    }
   }, []);
 
   const signOut = React.useCallback(async () => {
@@ -59,7 +50,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       clearSessionToken();
       setToken(null);
-      setExpiresAt(null);
       navigate("/sign-in");
     }
   }, [navigate]);
@@ -68,7 +58,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await apiFetch("/account/deactivate", { method: "POST" });
     clearSessionToken();
     setToken(null);
-    setExpiresAt(null);
     navigate("/sign-in");
   }, [navigate]);
 
@@ -82,14 +71,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signIn,
       signOut,
       deactivate,
-      expiresAt,
     }),
-    [token, notice, clearNotice, signIn, signOut, deactivate, expiresAt],
+    [token, notice, clearNotice, signIn, signOut, deactivate],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthContextValue {
   const ctx = React.useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within an AuthProvider");

@@ -191,3 +191,130 @@ def test_ac008_delete_another_users_id_returns_404(client: TestClient) -> None:
     response = client.delete(f"/categories/{created['id']}", headers=_auth_headers(token_b))
 
     assert response.status_code == 404
+
+
+def test_ac019_delete_with_no_expenses_assigned_returns_204_and_removes_the_row(
+    client: TestClient,
+) -> None:
+    _, token = _register_and_login(client)
+    created = client.post(
+        "/categories", json={"name": "Groceries"}, headers=_auth_headers(token)
+    ).json()
+
+    response = client.delete(f"/categories/{created['id']}", headers=_auth_headers(token))
+    follow_up = client.get("/categories", headers=_auth_headers(token))
+
+    assert response.status_code == 204
+    assert follow_up.json() == []
+
+
+def test_ac020_delete_with_expenses_assigned_returns_409_and_changes_nothing(
+    client: TestClient, db_session: Session
+) -> None:
+    _, token = _register_and_login(client)
+    created = client.post(
+        "/categories", json={"name": "Groceries"}, headers=_auth_headers(token)
+    ).json()
+    expense = client.post(
+        "/expenses",
+        json={
+            "amount": 10.0,
+            "date": "2026-01-01",
+            "description": "milk",
+            "category_id": created["id"],
+        },
+        headers=_auth_headers(token),
+    ).json()
+
+    response = client.delete(f"/categories/{created['id']}", headers=_auth_headers(token))
+
+    assert response.status_code == 409
+    detail = response.json()["detail"]
+    assert "1" in detail
+    assert "reassign" in detail.lower() or "delete" in detail.lower()
+
+    stored_category = db_session.execute(
+        select(Category).where(Category.id == uuid.UUID(created["id"]))
+    ).scalar_one()
+    assert stored_category.name == "Groceries"
+
+    follow_up = client.get("/expenses", headers=_auth_headers(token)).json()
+    stored_expense = next(item for item in follow_up["items"] if item["id"] == expense["id"])
+    assert stored_expense["category_id"] == created["id"]
+
+
+def test_ac021_delete_with_multiple_expenses_names_the_count(client: TestClient) -> None:
+    _, token = _register_and_login(client)
+    created = client.post(
+        "/categories", json={"name": "Groceries"}, headers=_auth_headers(token)
+    ).json()
+    for i in range(3):
+        client.post(
+            "/expenses",
+            json={
+                "amount": 10.0,
+                "date": "2026-01-01",
+                "description": f"item {i}",
+                "category_id": created["id"],
+            },
+            headers=_auth_headers(token),
+        )
+
+    response = client.delete(f"/categories/{created['id']}", headers=_auth_headers(token))
+
+    assert response.status_code == 409
+    assert "3" in response.json()["detail"]
+
+
+def test_ac022_blocked_delete_never_sets_expense_category_id_to_null(
+    client: TestClient, db_session: Session
+) -> None:
+    from app.models import Expense
+
+    _, token = _register_and_login(client)
+    created = client.post(
+        "/categories", json={"name": "Groceries"}, headers=_auth_headers(token)
+    ).json()
+    expense = client.post(
+        "/expenses",
+        json={
+            "amount": 10.0,
+            "date": "2026-01-01",
+            "description": "milk",
+            "category_id": created["id"],
+        },
+        headers=_auth_headers(token),
+    ).json()
+
+    client.delete(f"/categories/{created['id']}", headers=_auth_headers(token))
+
+    stored_expense = db_session.execute(
+        select(Expense).where(Expense.id == uuid.UUID(expense["id"]))
+    ).scalar_one()
+    assert stored_expense.category_id == uuid.UUID(created["id"])
+
+
+def test_ac023_patch_rename_reflects_in_expense_category_name(client: TestClient) -> None:
+    _, token = _register_and_login(client)
+    created = client.post(
+        "/categories", json={"name": "Groceries"}, headers=_auth_headers(token)
+    ).json()
+    expense = client.post(
+        "/expenses",
+        json={
+            "amount": 10.0,
+            "date": "2026-01-01",
+            "description": "milk",
+            "category_id": created["id"],
+        },
+        headers=_auth_headers(token),
+    ).json()
+
+    rename = client.patch(
+        f"/categories/{created['id']}", json={"name": "Food"}, headers=_auth_headers(token)
+    )
+    assert rename.status_code == 200
+
+    follow_up = client.get("/expenses", headers=_auth_headers(token)).json()
+    stored_expense = next(item for item in follow_up["items"] if item["id"] == expense["id"])
+    assert stored_expense["category_name"] == "Food"
