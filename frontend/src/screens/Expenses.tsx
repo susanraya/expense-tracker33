@@ -68,7 +68,6 @@ export default function Screen() {
 
   const [startInput, setStartInput] = React.useState(startOfMonthIso());
   const [endInput, setEndInput] = React.useState(TODAY_ISO);
-  const [categoryFilter, setCategoryFilter] = React.useState("all");
 
   const [toast, setToast] = React.useState(null);
   const [modal, setModal] = React.useState({ open: false, mode: "add", id: null });
@@ -100,7 +99,6 @@ export default function Screen() {
       const params = new URLSearchParams();
       if (startInput) params.set("start", startInput);
       if (endInput) params.set("end", endInput);
-      if (categoryFilter !== "all") params.set("category_id", categoryFilter);
       params.set("limit", "50");
       params.set("offset", "0");
       const data = await apiFetch(`/expenses?${params.toString()}`);
@@ -110,7 +108,7 @@ export default function Screen() {
     } catch {
       setStatus("error");
     }
-  }, [startInput, endInput, categoryFilter]);
+  }, [startInput, endInput]);
 
   React.useEffect(() => {
     loadCategories();
@@ -154,6 +152,36 @@ export default function Screen() {
     if (!raw) next.amount = "Enter an amount, for example 24.50.";
     else if (!isFinite(n) || n <= 0) next.amount = "Amount must be greater than zero.";
     if (!f.date) next.date = "Pick the date you spent it.";
+    if (!f.category_id) next.category_id = "Pick a category.";
+    return next;
+  }
+
+  function fieldFromLoc(loc) {
+    if (!Array.isArray(loc)) return null;
+    const last = loc[loc.length - 1];
+    if (last === "amount" || last === "date" || last === "category_id") return last;
+    return null;
+  }
+
+  function messageFor422(err) {
+    const detail = err.body && typeof err.body === "object" ? err.body.detail : null;
+    const next = {};
+    if (Array.isArray(detail)) {
+      for (const item of detail) {
+        const field = fieldFromLoc(item && item.loc);
+        if (field) {
+          next[field] =
+            field === "category_id"
+              ? "Pick a category."
+              : field === "date"
+                ? "Enter a valid date."
+                : "Enter an amount greater than zero.";
+        }
+      }
+    }
+    if (Object.keys(next).length === 0) {
+      next.amount = "Check the amount, date and category and try again.";
+    }
     return next;
   }
 
@@ -168,7 +196,7 @@ export default function Screen() {
       amount,
       date: form.date,
       description: form.description.trim(),
-      category_id: form.category_id || null,
+      category_id: form.category_id,
     };
 
     setSaving(true);
@@ -187,7 +215,7 @@ export default function Screen() {
       if (err instanceof ApiError && err.status === 404) {
         setErrors({ category_id: "That category no longer exists." });
       } else if (err instanceof ApiError && err.status === 422) {
-        setErrors({ amount: "Check the amount and date and try again." });
+        setErrors(messageFor422(err));
       } else {
         setErrors({ amount: "Something went wrong saving this expense. Try again." });
       }
@@ -271,7 +299,7 @@ export default function Screen() {
             Filter expenses
           </h2>
           <div className="flex flex-col lg:flex-row lg:items-end gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
               <div>
                 <Label
                   htmlFor="filter-start"
@@ -301,29 +329,6 @@ export default function Screen() {
                   value={endInput}
                   onChange={(e) => setEndInput(e.target.value)}
                 />
-              </div>
-              <div>
-                <Label
-                  htmlFor="filter-category"
-                  className="block mb-1.5 text-xs font-semibold uppercase"
-                >
-                  Category
-                </Label>
-                <Select
-                  id="filter-category"
-                  style={fieldStyle}
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                >
-                  <option value="all" style={optionStyle}>
-                    All categories
-                  </option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id} style={optionStyle}>
-                      {c.name}
-                    </option>
-                  ))}
-                </Select>
               </div>
             </div>
           </div>
@@ -541,10 +546,11 @@ export default function Screen() {
                     id="exp-category"
                     value={form.category_id}
                     onChange={(e) => setForm((f) => ({ ...f, category_id: e.target.value }))}
+                    aria-invalid={errors.category_id ? "true" : "false"}
                     style={fieldStyle}
                   >
                     <option value="" style={optionStyle}>
-                      Uncategorised
+                      Select a category
                     </option>
                     {categories.map((c) => (
                       <option key={c.id} value={c.id} style={optionStyle}>
