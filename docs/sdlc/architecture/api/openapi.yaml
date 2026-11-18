@@ -2,6 +2,381 @@
 openapi: 3.1.0
 info:
   title: expense tracker
-  version: architecture-v0
+  version: architecture-v1
   description: Designed API from the approved architecture (not extracted from code).
-paths: {}
+paths:
+  /account/deactivate:
+    post:
+      summary: Deactivate the account, revoke all active sessions, and block future
+        sign-in.
+      description: Deactivate the account, revoke all active sessions, and block future
+        sign-in.
+      operationId: post_account_deactivate
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: '{ confirm: true }'
+      responses:
+        '200':
+          description: 204 No Content
+      security:
+      - bearerAuth: []
+  /auth/login:
+    post:
+      summary: Sign in with email and password; returns opaque session token in the
+        body on success, generic message on failure.
+      description: Sign in with email and password; returns opaque session token in
+        the body on success, generic message on failure.
+      operationId: post_auth_login
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: '{ email, password }'
+      responses:
+        '200':
+          description: '200 { token, user: { id, email } } or 401 generic message'
+  /auth/logout:
+    post:
+      summary: End the current session immediately by revoking the token server-side.
+      description: End the current session immediately by revoking the token server-side.
+      operationId: post_auth_logout
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: empty body
+      responses:
+        '200':
+          description: 204 No Content
+      security:
+      - bearerAuth: []
+  /auth/me:
+    get:
+      summary: Return the current authenticated user; used to confirm session validity.
+      description: Return the current authenticated user; used to confirm session
+        validity.
+      operationId: get_auth_me
+      parameters: []
+      responses:
+        '200':
+          description: 200 { id, email } or 401
+      security:
+      - bearerAuth: []
+  /auth/register:
+    post:
+      summary: Create a private account with email and password; rejects duplicate
+        email and invalid email/password.
+      description: Create a private account with email and password; rejects duplicate
+        email and invalid email/password.
+      operationId: post_auth_register
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: '{ email, password }'
+      responses:
+        '200':
+          description: 201 { user_id, token } or 409/422 with message
+  /categories:
+    get:
+      summary: List the authenticated user's categories.
+      description: List the authenticated user's categories.
+      operationId: get_categories
+      parameters: []
+      responses:
+        '200':
+          description: 200 [ { id, name } ]
+      security:
+      - bearerAuth: []
+    post:
+      summary: Create a category with a non-blank name unique within the account.
+      description: Create a category with a non-blank name unique within the account.
+      operationId: post_categories
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: '{ name }'
+      responses:
+        '200':
+          description: 201 { id, name } or 422 validation message
+      security:
+      - bearerAuth: []
+  /categories/{id}:
+    patch:
+      summary: Rename a category to a valid, unique name.
+      description: Rename a category to a valid, unique name.
+      operationId: patch_categories_id
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: '{ name }'
+      responses:
+        '200':
+          description: 200 { id, name } or 422
+      security:
+      - bearerAuth: []
+    delete:
+      summary: Delete a category only if no expenses are assigned; otherwise blocked
+        with explanation.
+      description: Delete a category only if no expenses are assigned; otherwise blocked
+        with explanation.
+      operationId: delete_categories_id
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 204 or 409 with message
+      security:
+      - bearerAuth: []
+  /dashboard/summary:
+    get:
+      summary: Return current-period total and top categories computed from the user's
+        own data.
+      description: Return current-period total and top categories computed from the
+        user's own data.
+      operationId: get_dashboard_summary
+      parameters: []
+      responses:
+        '200':
+          description: '200 { period_total, top_categories: [ { name, total } ] }'
+      security:
+      - bearerAuth: []
+  /expenses:
+    get:
+      summary: List the user's expenses, most recent first.
+      description: List the user's expenses, most recent first.
+      operationId: get_expenses
+      parameters: []
+      responses:
+        '200':
+          description: '200 [ { id, amount, spent_on, category: { id, name }, note
+            } ]'
+      security:
+      - bearerAuth: []
+    post:
+      summary: Create an expense with positive amount, date and one of the user's
+        categories; optional note.
+      description: Create an expense with positive amount, date and one of the user's
+        categories; optional note.
+      operationId: post_expenses
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: '{ amount, spent_on, category_id, note? }'
+      responses:
+        '200':
+          description: 201 { id, ... } or 422 validation message
+      security:
+      - bearerAuth: []
+  /expenses/export:
+    get:
+      summary: Export the user's expenses, optionally within a date range, as CSV
+        with amount, date, category, note columns.
+      description: Export the user's expenses, optionally within a date range, as
+        CSV with amount, date, category, note columns.
+      operationId: get_expenses_export
+      parameters: []
+      responses:
+        '200':
+          description: 200 text/csv attachment
+      security:
+      - bearerAuth: []
+  /expenses/{id}:
+    patch:
+      summary: Edit an existing expense's amount, date, category or note.
+      description: Edit an existing expense's amount, date, category or note.
+      operationId: patch_expenses_id
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: '{ amount?, spent_on?, category_id?, note? }'
+      responses:
+        '200':
+          description: 200 { id, ... } or 422
+      security:
+      - bearerAuth: []
+    delete:
+      summary: Delete an expense after confirmation.
+      description: Delete an expense after confirmation.
+      operationId: delete_expenses_id
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 204 No Content
+      security:
+      - bearerAuth: []
+  /reports/by-category:
+    get:
+      summary: Per-category spending totals for the user over an optional date range.
+      description: Per-category spending totals for the user over an optional date
+        range.
+      operationId: get_reports_by_category
+      parameters: []
+      responses:
+        '200':
+          description: '200 { breakdown: [ { category, total } ] } or 400 invalid
+            range'
+      security:
+      - bearerAuth: []
+  /reports/over-time:
+    get:
+      summary: Time-series of total spending for the user over an optional date range.
+      description: Time-series of total spending for the user over an optional date
+        range.
+      operationId: get_reports_over_time
+      parameters: []
+      responses:
+        '200':
+          description: '200 { points: [ { date, total } ] } or 400 invalid range'
+      security:
+      - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    users:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        password_hash:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - email
+      - password_hash
+      - is_active
+      - created_at
+    sessions:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        token_hash:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        last_active_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - user_id
+      - token_hash
+      - created_at
+      - last_active_at
+      - expires_at
+    categories:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - user_id
+      - name
+      - created_at
+    expenses:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        category_id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        spent_on:
+          type: string
+          format: date
+        note:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - user_id
+      - category_id
+      - amount
+      - spent_on
+      - created_at
+      - updated_at
