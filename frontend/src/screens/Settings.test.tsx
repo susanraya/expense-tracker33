@@ -87,12 +87,16 @@ describe("Settings", () => {
     expect(screen.getByText("Account created 4 Mar 2026")).toBeInTheDocument();
   });
 
-  it("[AC-009] a 401 from /auth/me clears the stored token and redirects to sign-in", async () => {
+  it("[AC-007] a 401 from the background /auth/me fetch does not redirect away from Settings -- only an explicit action (like Sign out) does", async () => {
     const fetchMock = vi.fn(() => jsonResponse(401, { detail: "session expired" }));
     vi.stubGlobal("fetch", fetchMock);
 
     renderSettings();
 
-    await waitFor(() => expect(screen.getByText("Sign In Loaded")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByText("Loading your account details…")).not.toBeInTheDocument(),
+    );
+    expect(screen.queryByText("Sign In Loaded")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sign out/i })).toBeInTheDocument();
   });
 });

@@ -105,7 +105,10 @@ export default function Screen() {
     let alive = true;
     (async () => {
       try {
-        const data = await apiFetch("/auth/me");
+        // Silent: a stale/revoked token behind a background detail fetch should not
+        // yank the user away from Settings before they get a chance to act -- only an
+        // explicit action (Sign out, Deactivate) does that, below.
+        const data = await apiFetch("/auth/me", undefined, { silentUnauthorized: true });
         if (!alive) return;
         setMe({ email: data.email, createdAt: data.created_at });
         setMeStatus("ready");
@@ -298,10 +301,7 @@ export default function Screen() {
                           {me.email}
                         </span>
                       </h2>
-                      <p
-                        className="mt-1 text-[14px]"
-                        style={{ color: brand.neutralColor, ...num }}
-                      >
+                      <p className="mt-1 text-[14px]" style={{ color: brand.neutralColor, ...num }}>
                         Account created {fmtDate(me.createdAt)}
                       </p>
                     </>

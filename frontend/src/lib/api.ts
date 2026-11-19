@@ -80,7 +80,11 @@ export function setUnauthorizedHandler(handler: UnauthorizedHandler | null): voi
   onUnauthorized = handler;
 }
 
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+export async function apiFetch<T>(
+  path: string,
+  init?: RequestInit,
+  options?: { silentUnauthorized?: boolean },
+): Promise<T> {
   const sessionToken = getSessionToken();
   const bearer = sessionToken ?? API_SECRET_KEY;
   // Join with exactly one slash: API_BASE_URL is baked with a trailing slash (the API
@@ -101,7 +105,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     } catch {
       // No JSON body to read: keep body as null.
     }
-    if (response.status === 401) {
+    if (response.status === 401 && !options?.silentUnauthorized) {
       // Only a previously-authenticated call (one that sent the real session
       // token, not the shared secret used before sign-in) counts as an
       // expired session -- a bad login/register attempt is not that.
