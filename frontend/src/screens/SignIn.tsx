@@ -408,7 +408,10 @@ export default function Screen() {
                   style={{ color: brand.primaryColor }}
                 />
               )}
-              <span>{message}</span>
+              <span>
+                <span className="sr-only">{phase === "error" ? "Error: " : ""}</span>
+                {message}
+              </span>
             </p>
           )}
         </div>

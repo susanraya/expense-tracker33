@@ -138,12 +138,7 @@ def test_ac036_category_and_expense_created_through_post_survive_a_later_request
     ).json()
     created_expense = client.post(
         "/expenses",
-        json={
-            "amount": 12.34,
-            "date": "2026-01-01",
-            "description": "Persisted",
-            "category_id": created_category["id"],
-        },
+        json={"amount": 12.34, "date": "2026-01-01", "description": "Persisted"},
         headers=headers,
     ).json()
 
