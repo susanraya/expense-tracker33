@@ -514,9 +514,8 @@ export default function Screen() {
                   htmlFor="deactivate-ack"
                   className="text-[14px] leading-relaxed cursor-pointer"
                 >
-                  I understand this cannot be undone: my {expenseCount} expenses and{" "}
-                  {categoryCount} categories will be permanently deleted once this account is
-                  closed.
+                  I understand this cannot be undone: my {expenseCount} expenses and {categoryCount}{" "}
+                  categories will be permanently deleted once this account is closed.
                 </Label>
               </div>
 
