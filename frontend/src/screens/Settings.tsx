@@ -5,15 +5,6 @@ import * as UI from "@/lib/ui";
 import { Icons } from "@/lib/icons";
 import { brand } from "@/lib/brand";
 import { useAuth } from "@/lib/auth";
-import { apiFetch } from "@/lib/api";
-
-// Formats an ISO timestamp from the API ("2026-03-04T00:00:00Z") as "4 Mar 2026".
-function formatAccountDate(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-}
 
 const { Button, Card, CardHeader, CardContent, Label, Checkbox, Badge } = UI;
 
@@ -88,10 +79,6 @@ const DOCS = [
 
 export default function Screen() {
   const { signOut, deactivate } = useAuth();
-  const [accountLoading, setAccountLoading] = React.useState(true);
-  const [accountEmail, setAccountEmail] = React.useState("");
-  const [accountCreatedAt, setAccountCreatedAt] = React.useState("");
-  const [counts, setCounts] = React.useState({ expenses: 0, categories: 0 });
   const [remaining, setRemaining] = React.useState(INITIAL_REMAINING);
   const [signOutState, setSignOutState] = React.useState("idle");
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -109,43 +96,6 @@ export default function Screen() {
       setRemaining((r) => (r > 0 ? r - 1 : 0));
     }, 1000);
     return () => window.clearInterval(tick);
-  }, []);
-
-  // AC-008/AC-009: render the real signed-in account, not a hardcoded one. A 401 here
-  // is handled globally by apiFetch (it clears the token and signs the user out).
-  React.useEffect(() => {
-    let cancelled = false;
-    apiFetch("/auth/me")
-      .then((me) => {
-        if (cancelled) return;
-        setAccountEmail(me.email);
-        setAccountCreatedAt(formatAccountDate(me.created_at));
-        setAccountLoading(false);
-      })
-      .catch(() => {
-        if (!cancelled) setAccountLoading(false);
-      });
-    apiFetch("/expenses")
-      .then((data) => {
-        if (cancelled) return;
-        setCounts((c) => ({
-          ...c,
-          expenses: typeof data?.total === "number" ? data.total : 0,
-        }));
-      })
-      .catch(() => {});
-    apiFetch("/categories")
-      .then((data) => {
-        if (cancelled) return;
-        setCounts((c) => ({
-          ...c,
-          categories: Array.isArray(data) ? data.length : 0,
-        }));
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   React.useEffect(() => {
@@ -282,99 +232,86 @@ export default function Screen() {
         {/* Row 2 — account + session cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="np-rise overflow-hidden" style={cardStyle} data-wf="b-1-0">
-            {accountLoading ? (
-              <CardContent className="p-6" role="status" aria-live="polite">
-                <p className="text-[15px]" style={{ color: brand.neutralColor }}>
-                  Loading your account details…
-                </p>
-              </CardContent>
-            ) : (
-              <>
-                <CardHeader className="p-6 pb-4">
-                  <div className="flex items-start gap-4">
+            <CardHeader className="p-6 pb-4">
+              <div className="flex items-start gap-4">
+                <span
+                  className="shrink-0 grid place-items-center h-11 w-11 rounded-full"
+                  style={{
+                    background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.accentColor})`,
+                    color: brand.backgroundColor,
+                    boxShadow: `0 0 48px -8px ${brand.accentColor}`,
+                  }}
+                >
+                  <User className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="min-w-0">
                     <span
-                      className="shrink-0 grid place-items-center h-11 w-11 rounded-full"
-                      style={{
-                        background: `linear-gradient(135deg, ${brand.primaryColor}, ${brand.accentColor})`,
-                        color: brand.backgroundColor,
-                        boxShadow: `0 0 48px -8px ${brand.accentColor}`,
-                      }}
+                      className="block text-[13px] font-semibold uppercase tracking-[0.14em]"
+                      style={{ color: brand.neutralColor }}
                     >
-                      <User className="h-5 w-5" aria-hidden="true" />
+                      {"Signed in as "}
                     </span>
-                    <div className="min-w-0">
-                      <h2 className="min-w-0">
-                        <span
-                          className="block text-[13px] font-semibold uppercase tracking-[0.14em]"
-                          style={{ color: brand.neutralColor }}
-                        >
-                          {"Signed in as "}
-                        </span>
-                        <span
-                          className="block mt-1 text-[19px] font-semibold break-all leading-snug"
-                          style={{ fontFamily: brand.fontHeading }}
-                        >
-                          {accountEmail}
-                        </span>
-                      </h2>
-                      <p
-                        className="mt-1 text-[14px]"
-                        style={{ color: brand.neutralColor, ...num }}
-                      >
-                        Account created {accountCreatedAt}
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="px-6 pb-6 pt-0">
-                  <div
-                    style={{ borderTop: `1px solid ${line}` }}
-                    className="pt-5 flex flex-wrap items-center gap-x-8 gap-y-4"
-                  >
-                    <div>
-                      <p
-                        className="text-[12px] uppercase tracking-[0.12em]"
-                        style={{ color: brand.neutralColor }}
-                      >
-                        Expenses logged
-                      </p>
-                      <p className="text-[22px] font-bold" style={num}>
-                        {counts.expenses}
-                      </p>
-                    </div>
-                    <div>
-                      <p
-                        className="text-[12px] uppercase tracking-[0.12em]"
-                        style={{ color: brand.neutralColor }}
-                      >
-                        Categories
-                      </p>
-                      <p className="text-[22px] font-bold" style={num}>
-                        {counts.categories}
-                      </p>
-                    </div>
-                    <div className="min-w-0">
-                      <p
-                        className="text-[12px] uppercase tracking-[0.12em]"
-                        style={{ color: brand.neutralColor }}
-                      >
-                        Last sign-in
-                      </p>
-                      <p className="text-[15px] font-medium" style={num}>
-                        {ACCOUNT.lastSignIn}
-                      </p>
-                    </div>
-                  </div>
+                    <span
+                      className="block mt-1 text-[19px] font-semibold break-all leading-snug"
+                      style={{ fontFamily: brand.fontHeading }}
+                    >
+                      {ACCOUNT.email}
+                    </span>
+                  </h2>
+                  <p className="mt-1 text-[14px]" style={{ color: brand.neutralColor, ...num }}>
+                    Account created {ACCOUNT.createdAt}
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="px-6 pb-6 pt-0">
+              <div
+                style={{ borderTop: `1px solid ${line}` }}
+                className="pt-5 flex flex-wrap items-center gap-x-8 gap-y-4"
+              >
+                <div>
                   <p
-                    className="mt-5 text-[13px] flex items-center gap-2"
+                    className="text-[12px] uppercase tracking-[0.12em]"
                     style={{ color: brand.neutralColor }}
                   >
-                    <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                    Details last refreshed {ACCOUNT.refreshedMinutesAgo} minutes ago
+                    Expenses logged
                   </p>
-                </CardContent>
-              </>
-            )}
+                  <p className="text-[22px] font-bold" style={num}>
+                    {ACCOUNT.expenses}
+                  </p>
+                </div>
+                <div>
+                  <p
+                    className="text-[12px] uppercase tracking-[0.12em]"
+                    style={{ color: brand.neutralColor }}
+                  >
+                    Categories
+                  </p>
+                  <p className="text-[22px] font-bold" style={num}>
+                    {ACCOUNT.categories}
+                  </p>
+                </div>
+                <div className="min-w-0">
+                  <p
+                    className="text-[12px] uppercase tracking-[0.12em]"
+                    style={{ color: brand.neutralColor }}
+                  >
+                    Last sign-in
+                  </p>
+                  <p className="text-[15px] font-medium" style={num}>
+                    {ACCOUNT.lastSignIn}
+                  </p>
+                </div>
+              </div>
+              <p
+                className="mt-5 text-[13px] flex items-center gap-2"
+                style={{ color: brand.neutralColor }}
+              >
+                <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                Details last refreshed {ACCOUNT.refreshedMinutesAgo} minutes ago
+              </p>
+            </CardContent>
           </Card>
 
           <Card className="np-rise overflow-hidden" style={cardStyle} data-wf="b-1-1">
@@ -600,8 +537,8 @@ export default function Screen() {
                   htmlFor="deactivate-ack"
                   className="text-[14px] leading-relaxed cursor-pointer"
                 >
-                  I understand that {counts.expenses} expenses and {counts.categories} categories
-                  will be locked to a closed account — this cannot be undone.
+                  I understand that {ACCOUNT.expenses} expenses and {ACCOUNT.categories} categories
+                  stay locked to a closed account.
                 </Label>
               </div>
 
