@@ -80,6 +80,9 @@ export default function Screen() {
   const [status, setStatus] = React.useState("loading");
   const [account, setAccount] = React.useState(null); // { email, createdAt }
 
+  const [expenseCount, setExpenseCount] = React.useState(0);
+  const [categoryCount, setCategoryCount] = React.useState(0);
+
   const [signOutState, setSignOutState] = React.useState("idle");
   const [modalOpen, setModalOpen] = React.useState(false);
   const [acknowledged, setAcknowledged] = React.useState(false);
@@ -105,6 +108,27 @@ export default function Screen() {
   React.useEffect(() => {
     loadAccount();
   }, [loadAccount]);
+
+  // So the deactivation checkbox can tell the person exactly what they're
+  // about to lose, instead of a generic warning (AC-010). Best-effort: a
+  // failure here just leaves the counts at 0 rather than blocking the dialog.
+  const loadCounts = React.useCallback(async () => {
+    try {
+      const [expenses, cats] = await Promise.all([
+        apiFetch("/expenses?limit=1&offset=0"),
+        apiFetch("/categories"),
+      ]);
+      setExpenseCount(typeof expenses?.total === "number" ? expenses.total : 0);
+      setCategoryCount(Array.isArray(cats) ? cats.length : 0);
+    } catch {
+      setExpenseCount(0);
+      setCategoryCount(0);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadCounts();
+  }, [loadCounts]);
 
   React.useEffect(() => {
     if (!modalOpen) return undefined;
@@ -490,8 +514,9 @@ export default function Screen() {
                   htmlFor="deactivate-ack"
                   className="text-[14px] leading-relaxed cursor-pointer"
                 >
-                  I understand this cannot be undone and that every expense and category tied to
-                  this account becomes inaccessible once it is closed.
+                  I understand this cannot be undone: my {expenseCount} expenses and{" "}
+                  {categoryCount} categories will be permanently deleted once this account is
+                  closed.
                 </Label>
               </div>
 
