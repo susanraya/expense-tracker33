@@ -3,22 +3,11 @@
 > Maintained by QuorQ AI SDLC. Text between `sdlc:auto` markers is regenerated; anything outside them is yours and is kept.
 
 <!-- sdlc:auto:start releases -->
-## e7781eabb85e — 2026-11-18
+## f7ee756e5c02 — 2026-11-19
 
-**Commit:** `e7781ea`
+**Commit:** `f7ee756`
 
-**Delivered:**
-- US-006: Add an expense
-- US-010: Create a category
-- US-011: Edit a category
-- US-012: Delete a category
-- US-FIX-1: Fix the scaffold's failing checks
-
-## 536dcb5dc27a — 2026-11-18
-
-**Commit:** `536dcb5`
-
-**Delivered:**
+**Delivered (up to this release):**
 - US-001: Register a new account
 - US-002: Sign in to my account
 - US-003: Sign out and session expiry
@@ -26,16 +15,5 @@
 - US-005: Deactivate my account
 - US-020: Core data served over REST APIs backed by a database
 - US-021: Free to use with no payment processing
-
-## 9fddcbc682cd — 2026-11-18
-
-**Commit:** `9fddcbc`
-
-_Nothing delivered in this window._
-
-## 169463ef1028 — 2026-11-18
-
-**Commit:** `169463e`
-
-_Nothing delivered in this window._
+- US-FIX-1: Fix the scaffold's failing checks
 <!-- sdlc:auto:end releases -->

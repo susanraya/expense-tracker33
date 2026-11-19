@@ -7,39 +7,22 @@ _No E2E run yet._
 <!-- sdlc:auto:end e2e -->
 
 <!-- sdlc:auto:start unit -->
-**Coverage:** backend 95.5% · frontend 76.8%
+**Coverage:** —
 
-**Test cases:** 0 / 121 written
+**Test cases:** — / — written
 
-**Lines written:** 0
+**Lines written:** —
 
-**Files deferred:** 0
+**Files deferred:** —
 <!-- sdlc:auto:end unit -->
 
 <!-- sdlc:auto:start dev-checks -->
-### Sprint 2
-
-| Step | Status | Ticket | Finished |
-|---|---|---|---|
-| run_checks | failed | — | 2026-11-18 |
-| write_tests | succeeded | US-006 | 2026-11-18 |
-| write_tests | succeeded | US-012 | 2026-11-18 |
-
 ### Sprint 1
 
 | Step | Status | Ticket | Finished |
 |---|---|---|---|
-| run_checks | failed | — | 2026-11-18 |
-| write_tests | succeeded | US-001 | 2026-11-18 |
-| write_tests | succeeded | US-021 | 2026-11-18 |
-| write_tests | succeeded | US-004 | 2026-11-18 |
-
-### Sprint 1
-
-| Step | Status | Ticket | Finished |
-|---|---|---|---|
-| run_checks | failed | — | 2026-11-18 |
-| write_tests | succeeded | US-001 | 2026-11-18 |
-| write_tests | succeeded | US-021 | 2026-11-18 |
-| write_tests | succeeded | US-020 | 2026-11-18 |
+| run_checks | failed | — | 2026-11-19 |
+| write_tests | succeeded | US-001 | 2026-11-19 |
+| write_tests | succeeded | US-020 | 2026-11-19 |
+| write_tests | succeeded | US-021 | 2026-11-19 |
 <!-- sdlc:auto:end dev-checks -->

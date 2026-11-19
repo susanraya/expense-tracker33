@@ -5,7 +5,7 @@
 <!-- sdlc:auto:start overview -->
 simple expense tracker
 
-**Documentation version:** v8
+**Documentation version:** v1
 <!-- sdlc:auto:end overview -->
 
 ## Contents
@@ -16,21 +16,21 @@ simple expense tracker
 | [Requirements](requirements/README.md) | v1 approved |
 | [Architecture](architecture/README.md) | 15 entries |
 | [Planning](planning/README.md) | 11 entries |
-| [Development](development/README.md) | 6 entries |
-| [Testing](testing/README.md) | 0 entries |
+| [Development](development/README.md) | 8 entries |
+| [Testing](testing/README.md) | 4 entries |
 | [Deployment](deployment/README.md) | 1 entry |
 | [Maintenance](maintenance/README.md) | 0 entries |
 | [Data model](architecture/data-model.md) | generated |
 | [API (OpenAPI)](architecture/api/openapi.yaml) | generated |
 | [Decisions (ADRs)](architecture/adr/README.md) | 4 decisions |
 | [Sprint plan](development/sprint-plan.md) | 5 sprints |
-| [Developer guide](development/developer-guide.md) | generated |
-| [API reference](development/api-reference.md) | 14 routes |
+| [Developer guide](development/developer-guide.md) | not generated yet |
+| [API reference](development/api-reference.md) | 0 routes |
 | [Test report](testing/test-report.md) | not run yet |
-| [Tests](testing/test-cases.md) | 158 tests |
+| [Tests](testing/test-cases.md) | 161 tests |
 | [Deployment guide](deployment/deployment-guide.md) | deployed |
 | [Runbook](deployment/runbook.md) | deployed |
-| [Release notes](deployment/release-notes.md) | 4 releases |
+| [Release notes](deployment/release-notes.md) | 1 release |
 | [Traceability matrix](traceability-matrix.md) | 22 requirements |
-| [Changelog](CHANGELOG.md) | 8 versions |
+| [Changelog](CHANGELOG.md) | 1 version |
 <!-- sdlc:auto:end contents -->

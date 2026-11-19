@@ -3,49 +3,65 @@
 > Maintained by QuorQ AI SDLC. Text between `sdlc:auto` markers is regenerated; anything outside them is yours and is kept.
 
 <!-- sdlc:auto:start narrative -->
-### DEV-US-006 · draft · source: dev:US-006
+### DEV-US-001 · approved · source: dev:US-001
 
-Ticket to add an expense failed during this development run; no commit was produced.
+Register a new account - delivered.
 
-Ticket US-006 (Add an expense) status=failed. No commit associated. Feature not delivered in this run.
+Ticket US-001 status: delivered. Commit: 5a8d1410d55865d700ea202320157be26d1f6358.
 
-**Related:** US-006
+**Related:** US-001
 
-### DEV-US-007 · draft · source: dev:US-007
+### DEV-US-002 · approved · source: dev:US-002
 
-Ticket to view expenses was skipped during this development run.
+Sign in to my account - delivered.
 
-Ticket US-007 (View my expenses) status=skipped. No commit associated. Feature not attempted/delivered in this run.
+Ticket US-002 status: delivered. Commit: 5a8d1410d55865d700ea202320157be26d1f6358.
 
-**Related:** US-007
+**Related:** US-002
 
-### DEV-US-010 · approved · source: dev:US-010
+### DEV-US-003 · approved · source: dev:US-003
 
-Ticket to create a category was delivered successfully.
+Sign out and session expiry - delivered.
 
-Ticket US-010 (Create a category) status=delivered, commit=57a70a0fcc49360ca2760201756f98d76854505b.
+Ticket US-003 status: delivered. Commit: 5a8d1410d55865d700ea202320157be26d1f6358.
 
-**Related:** US-010
+**Related:** US-003
 
-### DEV-US-011 · approved · source: dev:US-011
+### DEV-US-004 · approved · source: dev:US-004
 
-Ticket to edit a category was delivered successfully.
+Keep my data private to my account - delivered.
 
-Ticket US-011 (Edit a category) status=delivered, commit=57a70a0fcc49360ca2760201756f98d76854505b.
+Ticket US-004 status: delivered. Commit: 5a8d1410d55865d700ea202320157be26d1f6358.
 
-**Related:** US-011
+**Related:** US-004
 
-### DEV-US-012 · approved · source: dev:US-012
+### DEV-US-005 · approved · source: dev:US-005
 
-Ticket to delete a category was delivered successfully.
+Deactivate my account - delivered.
 
-Ticket US-012 (Delete a category) status=delivered, commit=57a70a0fcc49360ca2760201756f98d76854505b.
+Ticket US-005 status: delivered. Commit: 5a8d1410d55865d700ea202320157be26d1f6358.
 
-**Related:** US-012
+**Related:** US-005
+
+### DEV-US-020 · approved · source: dev:US-020
+
+Core data served over REST APIs backed by a database - delivered.
+
+Ticket US-020 status: delivered. Commit: 5a8d1410d55865d700ea202320157be26d1f6358.
+
+**Related:** US-020
+
+### DEV-US-021 · approved · source: dev:US-021
+
+Free to use with no payment processing - delivered.
+
+Ticket US-021 status: delivered. Commit: 5a8d1410d55865d700ea202320157be26d1f6358.
+
+**Related:** US-021
 
 ### DEV-US-FIX-1 · draft · source: dev:US-FIX-1
 
-Ticket intended to fix the scaffold's failing checks failed during this development run.
+Attempt to fix the scaffold's failing checks - failed, no commit produced.
 
-Ticket US-FIX-1 (Fix the scaffold's failing checks) status=failed. No commit associated. Underlying scaffold check failures remain unresolved.
+Ticket US-FIX-1 'Fix the scaffold's failing checks' status: failed. No commit recorded.
 <!-- sdlc:auto:end narrative -->
