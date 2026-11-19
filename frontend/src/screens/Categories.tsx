@@ -177,19 +177,11 @@ export default function Screen() {
         body: `“${cat.name}” is gone.`,
       });
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
-        setMessage({
-          tone: "error",
-          title: "Category still has expenses assigned to it",
-          body: `“${cat.name}” still has expenses assigned to it. Move them to another category before deleting.`,
-        });
-      } else {
-        setMessage({
-          tone: "error",
-          title: "We couldn’t delete that category",
-          body: "Something went wrong talking to the server. Try again.",
-        });
-      }
+      setMessage({
+        tone: "error",
+        title: "We couldn’t delete that category",
+        body: "Something went wrong talking to the server. Try again.",
+      });
     } finally {
       setDeletingId(null);
     }

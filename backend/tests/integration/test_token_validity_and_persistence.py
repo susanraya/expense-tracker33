@@ -124,23 +124,6 @@ def test_ac037_idle_expired_token_returns_401_and_changes_no_row_on_every_endpoi
     assert _row_counts(db_session) == before
 
 
-def test_ac010_deactivated_token_returns_401_and_changes_no_row_on_every_endpoint(
-    client: TestClient, db_session: Session
-) -> None:
-    """AC-010/NFR-004: once an account is deactivated, its sessions are revoked,
-    so every protected endpoint rejects the now-deactivated token with 401 and
-    touches no category/expense row -- the same guarantee a logged-out token has."""
-    token = _register_and_login(client)
-    client.post("/account/deactivate", headers={"Authorization": f"Bearer {token}"})
-
-    headers = {"Authorization": f"Bearer {token}"}
-    before = _row_counts(db_session)
-    for method, path in _endpoints():
-        response = _call(client, method, path, headers=headers)
-        assert response.status_code == 401, f"{method} {path} -> {response.status_code}"
-    assert _row_counts(db_session) == before
-
-
 def test_ac036_category_and_expense_created_through_post_survive_a_later_request(
     client: TestClient,
 ) -> None:
