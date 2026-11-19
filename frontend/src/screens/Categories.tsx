@@ -1,4 +1,5 @@
 // @ts-nocheck -- generated from the approved design under its JS runtime contract; not hand-written TypeScript.
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
 
 import * as UI from "@/lib/ui";
@@ -55,8 +56,8 @@ export default function Screen() {
   const [renameValue, setRenameValue] = React.useState("");
   const [renameError, setRenameError] = React.useState("");
   const [deletingId, setDeletingId] = React.useState(null);
-  const [pendingDeleteId, setPendingDeleteId] = React.useState(null);
   const nameInputRef = React.useRef(null);
+  const renameInputRef = React.useRef(null);
 
   const loadCategories = React.useCallback(async () => {
     setStatus("loading");
@@ -64,7 +65,7 @@ export default function Screen() {
       const data = await apiFetch("/categories");
       setCategories(Array.isArray(data) ? data : []);
       setStatus("ready");
-    } catch {
+    } catch (err) {
       setStatus("error");
     }
   }, []);
@@ -165,33 +166,22 @@ export default function Screen() {
 
   /* ---------- delete (DELETE /categories/{id}) ---------- */
 
-  function requestDelete(cat) {
-    setPendingDeleteId(cat.id);
-    setMessage(null);
-  }
-
-  function cancelDelete() {
-    setPendingDeleteId(null);
-  }
-
   async function confirmDelete(cat) {
     setDeletingId(cat.id);
     try {
       await apiFetch(`/categories/${cat.id}`, { method: "DELETE" });
       setCategories((prev) => prev.filter((c) => c.id !== cat.id));
-      setPendingDeleteId(null);
       setMessage({
         tone: "success",
         title: "Category deleted",
         body: `“${cat.name}” is gone.`,
       });
     } catch (err) {
-      setPendingDeleteId(null);
       if (err instanceof ApiError && err.status === 409) {
         setMessage({
           tone: "error",
-          title: `Can’t delete “${cat.name}”`,
-          body: `“${cat.name}” still has expenses assigned to it. Reassign those expenses to another category or delete them first, then delete “${cat.name}” again.`,
+          title: "Category still has expenses assigned to it",
+          body: `“${cat.name}” still has expenses assigned to it. Move them to another category before deleting.`,
         });
       } else {
         setMessage({
@@ -508,6 +498,7 @@ export default function Screen() {
                                 </Label>
                                 <Input
                                   id={`rename-${cat.id}`}
+                                  ref={renameInputRef}
                                   value={renameValue}
                                   onChange={(e) => setRenameValue(e.target.value)}
                                   className="np-focus h-10 text-sm"
@@ -550,39 +541,7 @@ export default function Screen() {
                             {cat.created_at ? fmtDate(cat.created_at) : "—"}
                           </TD>
                           <TD className="px-5 py-4 text-right sm:px-7">
-                            {!editing && pendingDeleteId === cat.id && (
-                              <div className="flex flex-col items-end gap-2">
-                                <p
-                                  className="max-w-[28ch] text-right text-xs leading-relaxed"
-                                  style={{ color: "rgba(255,255,255,0.82)" }}
-                                >
-                                  Delete “{cat.name}”? This cannot be undone.
-                                </p>
-                                <div className="flex gap-2">
-                                  <Button
-                                    type="button"
-                                    onClick={() => confirmDelete(cat)}
-                                    disabled={deletingId === cat.id}
-                                    aria-label={`Confirm delete ${cat.name}`}
-                                    className="np-btn np-focus h-9 px-3 text-xs"
-                                    style={quietBtn}
-                                  >
-                                    {deletingId === cat.id ? "Deleting…" : "Confirm delete"}
-                                  </Button>
-                                  <Button
-                                    type="button"
-                                    onClick={cancelDelete}
-                                    disabled={deletingId === cat.id}
-                                    aria-label={`Cancel delete ${cat.name}`}
-                                    className="np-btn np-focus h-9 px-3 text-xs"
-                                    style={quietBtn}
-                                  >
-                                    Cancel
-                                  </Button>
-                                </div>
-                              </div>
-                            )}
-                            {!editing && pendingDeleteId !== cat.id && (
+                            {!editing && (
                               <div className="flex justify-end gap-2">
                                 <Button
                                   type="button"
@@ -596,14 +555,14 @@ export default function Screen() {
                                 </Button>
                                 <Button
                                   type="button"
-                                  onClick={() => requestDelete(cat)}
+                                  onClick={() => confirmDelete(cat)}
                                   disabled={deletingId === cat.id}
                                   aria-label={`Delete ${cat.name}`}
                                   className="np-btn np-focus h-9 px-3 text-xs"
                                   style={quietBtn}
                                 >
                                   <Trash className="h-3.5 w-3.5" aria-hidden="true" />
-                                  Delete
+                                  {deletingId === cat.id ? "Deleting…" : "Delete"}
                                 </Button>
                               </div>
                             )}

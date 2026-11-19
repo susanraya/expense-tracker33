@@ -410,7 +410,7 @@ export default function Screen() {
               )}
               <span>
                 <span className="sr-only">{phase === "error" ? "Error: " : ""}</span>
-                {message}
+                <span>{message}</span>
               </span>
             </p>
           )}

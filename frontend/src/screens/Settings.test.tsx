@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -87,12 +88,103 @@ describe("Settings", () => {
     expect(screen.getByText("Account created 4 Mar 2026")).toBeInTheDocument();
   });
 
-  it("[AC-009] a 401 from /auth/me clears the stored token and redirects to sign-in", async () => {
+  it("[AC-007] a 401 from the background /auth/me fetch signs the user out and routes to /sign-in", async () => {
     const fetchMock = vi.fn(() => jsonResponse(401, { detail: "session expired" }));
     vi.stubGlobal("fetch", fetchMock);
 
     renderSettings();
 
     await waitFor(() => expect(screen.getByText("Sign In Loaded")).toBeInTheDocument());
+  });
+
+  it("[AC-006] sign out calls POST /auth/logout with the Bearer token and returns to sign-in", async () => {
+    const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+      if (String(url).includes("/auth/me")) {
+        return jsonResponse(200, {
+          id: "u1",
+          email: "real.user@example.com",
+          role: "user",
+          created_at: "2026-03-04T00:00:00Z",
+        });
+      }
+      if (String(url).includes("/auth/logout") && init?.method === "POST") {
+        expect((init?.headers as Record<string, string>).Authorization).toBe("Bearer tok-abc");
+        return jsonResponse(204, null);
+      }
+      return jsonResponse(404, { detail: "not found" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    renderSettings();
+
+    await waitFor(() => expect(screen.getByText("real.user@example.com")).toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: /sign out/i }));
+
+    await waitFor(() => expect(screen.getByText("Sign In Loaded")).toBeInTheDocument());
+    expect(
+      fetchMock.mock.calls.some(
+        ([u, i]) => String(u).includes("/auth/logout") && (i as RequestInit)?.method === "POST",
+      ),
+    ).toBe(true);
+  });
+
+  it("[AC-010] confirming deactivation calls POST /account/deactivate and returns to sign-in", async () => {
+    const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+      if (String(url).includes("/auth/me")) {
+        return jsonResponse(200, {
+          id: "u1",
+          email: "real.user@example.com",
+          role: "user",
+          created_at: "2026-03-04T00:00:00Z",
+        });
+      }
+      if (String(url).includes("/account/deactivate") && init?.method === "POST") {
+        return jsonResponse(204, null);
+      }
+      return jsonResponse(404, { detail: "not found" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    renderSettings();
+
+    await waitFor(() => expect(screen.getByText("real.user@example.com")).toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: "Deactivate account" }));
+    await user.click(screen.getByLabelText(/cannot be undone/i));
+    await user.click(screen.getByRole("button", { name: "Confirm deactivation" }));
+
+    await waitFor(() => expect(screen.getByText("Sign In Loaded")).toBeInTheDocument());
+  });
+
+  it("[AC-010] a failed deactivation surfaces a failure message and stays signed in", async () => {
+    const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+      if (String(url).includes("/auth/me")) {
+        return jsonResponse(200, {
+          id: "u1",
+          email: "real.user@example.com",
+          role: "user",
+          created_at: "2026-03-04T00:00:00Z",
+        });
+      }
+      if (String(url).includes("/account/deactivate") && init?.method === "POST") {
+        return jsonResponse(500, { detail: "server error" });
+      }
+      return jsonResponse(404, { detail: "not found" });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    renderSettings();
+
+    await waitFor(() => expect(screen.getByText("real.user@example.com")).toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: "Deactivate account" }));
+    await user.click(screen.getByLabelText(/cannot be undone/i));
+    await user.click(screen.getByRole("button", { name: "Confirm deactivation" }));
+
+    await waitFor(() =>
+      expect(screen.getByText(/We couldn't close your account just now/)).toBeInTheDocument(),
+    );
+    expect(screen.queryByText("Sign In Loaded")).not.toBeInTheDocument();
   });
 });

@@ -112,4 +112,25 @@ test.describe("[AC-009] protected screens require a session", () => {
     await expect(page).toHaveURL(/\/sign-in$/);
     await expect(page.getByRole("table")).toHaveCount(0);
   });
+
+  test("[AC-009] navigating directly to /dashboard with no session lands on sign-in", async ({
+    page,
+  }) => {
+    await page.goto("/dashboard");
+    await expect(page).toHaveURL(/\/sign-in$/);
+  });
+
+  test("[AC-009] navigating directly to /reports with no session lands on sign-in", async ({
+    page,
+  }) => {
+    await page.goto("/reports");
+    await expect(page).toHaveURL(/\/sign-in$/);
+  });
+
+  test("[AC-009] navigating directly to /settings with no session lands on sign-in", async ({
+    page,
+  }) => {
+    await page.goto("/settings");
+    await expect(page).toHaveURL(/\/sign-in$/);
+  });
 });

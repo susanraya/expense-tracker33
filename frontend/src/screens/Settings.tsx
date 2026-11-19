@@ -20,18 +20,6 @@ function fmtDate(iso) {
   return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-const ACCOUNT = {
-  name: "Susan Raya",
-  lastSignIn: "18 Nov 2026 · 08:42",
-  device: "Chrome 131 on macOS · Lisbon",
-  expenses: 148,
-  categories: 9,
-  refreshedMinutesAgo: 4,
-};
-
-const SESSION_WINDOW_SECONDS = 30 * 60;
-const INITIAL_REMAINING = 1572; // 26:12 left of the 30 minute inactivity window
-
 const DOCS = [
   {
     id: "i-6-0-0",
@@ -39,7 +27,7 @@ const DOCS = [
     meta: "README · updated 12 Nov 2026",
     body: [
       "Clone the repository, run the install step, then copy .env.example to .env before anything else.",
-      "Set DATABASE_URL=postgres://expense_app:<database-password>@localhost:5432/expense_tracker and SESSION_SECRET=<session-secret>. Never commit a filled-in .env.",
+      "Set DATABASE_URL and SESSION_SECRET from your own environment. Never commit a filled-in .env.",
       "Run the migration task to create the users, sessions, categories and expenses tables, then start the dev server. The React client talks to the REST API on port 4000.",
     ],
   },
@@ -87,9 +75,14 @@ const DOCS = [
 
 export default function Screen() {
   const { signOut, deactivate } = useAuth();
-  const [meStatus, setMeStatus] = React.useState("loading");
-  const [me, setMe] = React.useState({ email: "", createdAt: "" });
-  const [remaining, setRemaining] = React.useState(INITIAL_REMAINING);
+
+  // 'loading' | 'ready' | 'error'
+  const [status, setStatus] = React.useState("loading");
+  const [account, setAccount] = React.useState(null); // { email, createdAt }
+
+  const [expenseCount, setExpenseCount] = React.useState(0);
+  const [categoryCount, setCategoryCount] = React.useState(0);
+
   const [signOutState, setSignOutState] = React.useState("idle");
   const [modalOpen, setModalOpen] = React.useState(false);
   const [acknowledged, setAcknowledged] = React.useState(false);
@@ -101,30 +94,41 @@ export default function Screen() {
   const deactivateTriggerRef = React.useRef(null);
   const ackRef = React.useRef(null);
 
-  React.useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const data = await apiFetch("/auth/me");
-        if (!alive) return;
-        setMe({ email: data.email, createdAt: data.created_at });
-        setMeStatus("ready");
-      } catch {
-        if (!alive) return;
-        setMeStatus("error");
-      }
-    })();
-    return () => {
-      alive = false;
-    };
+  const loadAccount = React.useCallback(async () => {
+    setStatus("loading");
+    try {
+      const me = await apiFetch("/auth/me");
+      setAccount({ email: me.email, createdAt: me.created_at });
+      setStatus("ready");
+    } catch {
+      setStatus("error");
+    }
   }, []);
 
   React.useEffect(() => {
-    const tick = window.setInterval(() => {
-      setRemaining((r) => (r > 0 ? r - 1 : 0));
-    }, 1000);
-    return () => window.clearInterval(tick);
+    loadAccount();
+  }, [loadAccount]);
+
+  // So the deactivation checkbox can tell the person exactly what they're
+  // about to lose, instead of a generic warning (AC-010). Best-effort: a
+  // failure here just leaves the counts at 0 rather than blocking the dialog.
+  const loadCounts = React.useCallback(async () => {
+    try {
+      const [expenses, cats] = await Promise.all([
+        apiFetch("/expenses?limit=1&offset=0"),
+        apiFetch("/categories"),
+      ]);
+      setExpenseCount(typeof expenses?.total === "number" ? expenses.total : 0);
+      setCategoryCount(Array.isArray(cats) ? cats.length : 0);
+    } catch {
+      setExpenseCount(0);
+      setCategoryCount(0);
+    }
   }, []);
+
+  React.useEffect(() => {
+    loadCounts();
+  }, [loadCounts]);
 
   React.useEffect(() => {
     if (!modalOpen) return undefined;
@@ -186,11 +190,6 @@ export default function Screen() {
     });
   };
 
-  const mm = String(Math.floor(remaining / 60)).padStart(2, "0");
-  const ss = String(remaining % 60).padStart(2, "0");
-  const pct = Math.max(0, Math.min(100, (remaining / SESSION_WINDOW_SECONDS) * 100));
-  const expired = remaining <= 0;
-
   const surface = "rgba(255,255,255,0.06)";
   const surfaceHi = "rgba(255,255,255,0.09)";
   const line = "rgba(255,255,255,0.13)";
@@ -219,16 +218,14 @@ export default function Screen() {
     >
       <style>{`
         .np-root :focus-visible { outline: 2px solid var(--np-primary); outline-offset: 2px; border-radius: 10px; }
-        @keyframes npPulse { 0% { transform: translateX(-6%); opacity: .25 } 45% { opacity: 1 } 100% { transform: translateX(104%); opacity: .25 } }
         @keyframes npRise { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
         @keyframes npPop { from { opacity: 0; transform: translateY(14px) scale(.985) } to { opacity: 1; transform: none } }
-        .np-pulse { animation: npPulse 2.8s cubic-bezier(.45,0,.2,1) infinite; }
         .np-rise { animation: npRise .28s ease-out both; }
         .np-pop { animation: npPop .22s ease-out both; }
         .np-doc-panel { animation: npRise .22s ease-out both; }
         .np-trans { transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease; }
         @media (prefers-reduced-motion: reduce) {
-          .np-pulse, .np-rise, .np-pop, .np-doc-panel { animation: none !important; }
+          .np-rise, .np-pop, .np-doc-panel { animation: none !important; }
           .np-trans { transition: none !important; }
         }
       `}</style>
@@ -272,89 +269,77 @@ export default function Screen() {
                 >
                   <User className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <div className="min-w-0">
-                  {meStatus === "loading" ? (
-                    <p
-                      role="status"
-                      aria-live="polite"
-                      className="text-[15px]"
+                <div className="min-w-0 flex-1">
+                  <h2 className="min-w-0">
+                    <span
+                      className="block text-[13px] font-semibold uppercase tracking-[0.14em]"
                       style={{ color: brand.neutralColor }}
                     >
-                      Loading your account details…
-                    </p>
-                  ) : (
-                    <>
-                      <h2 className="min-w-0">
-                        <span
-                          className="block text-[13px] font-semibold uppercase tracking-[0.14em]"
-                          style={{ color: brand.neutralColor }}
-                        >
-                          {"Signed in as "}
-                        </span>
-                        <span
-                          className="block mt-1 text-[19px] font-semibold break-all leading-snug"
-                          style={{ fontFamily: brand.fontHeading }}
-                        >
-                          {me.email}
-                        </span>
-                      </h2>
-                      <p
-                        className="mt-1 text-[14px]"
-                        style={{ color: brand.neutralColor, ...num }}
+                      {"Signed in as "}
+                    </span>
+                    {status === "ready" && (
+                      <span
+                        className="block mt-1 text-[19px] font-semibold break-all leading-snug"
+                        style={{ fontFamily: brand.fontHeading }}
                       >
-                        Account created {fmtDate(me.createdAt)}
-                      </p>
-                    </>
-                  )}
+                        {account.email}
+                      </span>
+                    )}
+                  </h2>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="px-6 pb-6 pt-0">
-              <div
-                style={{ borderTop: `1px solid ${line}` }}
-                className="pt-5 flex flex-wrap items-center gap-x-8 gap-y-4"
-              >
-                <div>
-                  <p
-                    className="text-[12px] uppercase tracking-[0.12em]"
-                    style={{ color: brand.neutralColor }}
-                  >
-                    Expenses logged
-                  </p>
-                  <p className="text-[22px] font-bold" style={num}>
-                    {ACCOUNT.expenses}
-                  </p>
+              {status === "loading" && (
+                <p
+                  role="status"
+                  aria-live="polite"
+                  className="text-[14px]"
+                  style={{ color: brand.neutralColor }}
+                >
+                  Loading your account details…
+                </p>
+              )}
+
+              {status === "error" && (
+                <div
+                  className="flex flex-wrap items-start gap-3 p-4"
+                  style={{
+                    backgroundColor: "rgba(255,95,122,0.1)",
+                    border: "1px solid rgba(255,95,122,0.45)",
+                    borderRadius: brand.radius,
+                  }}
+                >
+                  <AlertCircle aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />
+                  <div>
+                    <p className="text-[14px] font-semibold text-white">
+                      We couldn’t load your account details
+                    </p>
+                    <Button
+                      type="button"
+                      onClick={loadAccount}
+                      className="np-trans mt-3 h-10 px-4 text-sm font-semibold hover:bg-white/10"
+                      style={{
+                        borderRadius: brand.radius,
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        border: `1px solid ${line}`,
+                        color: "#ffffff",
+                      }}
+                    >
+                      Try again
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <p
-                    className="text-[12px] uppercase tracking-[0.12em]"
-                    style={{ color: brand.neutralColor }}
-                  >
-                    Categories
-                  </p>
-                  <p className="text-[22px] font-bold" style={num}>
-                    {ACCOUNT.categories}
-                  </p>
-                </div>
-                <div className="min-w-0">
-                  <p
-                    className="text-[12px] uppercase tracking-[0.12em]"
-                    style={{ color: brand.neutralColor }}
-                  >
-                    Last sign-in
-                  </p>
-                  <p className="text-[15px] font-medium" style={num}>
-                    {ACCOUNT.lastSignIn}
-                  </p>
-                </div>
-              </div>
-              <p
-                className="mt-5 text-[13px] flex items-center gap-2"
-                style={{ color: brand.neutralColor }}
-              >
-                <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                Details last refreshed {ACCOUNT.refreshedMinutesAgo} minutes ago
-              </p>
+              )}
+
+              {status === "ready" && (
+                <p
+                  style={{ borderTop: `1px solid ${line}`, color: brand.neutralColor, ...num }}
+                  className="pt-5 text-[14px]"
+                >
+                  Account created {fmtDate(account.createdAt)}
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -370,78 +355,26 @@ export default function Screen() {
                 <Badge
                   className="rounded-full px-3 py-1 text-[12px] font-semibold"
                   style={{
-                    backgroundColor: expired ? "rgba(255,255,255,0.08)" : "rgba(34,211,238,0.14)",
-                    color: expired ? brand.neutralColor : brand.primaryColor,
-                    border: `1px solid ${expired ? line : "rgba(34,211,238,0.35)"}`,
+                    backgroundColor: "rgba(34,211,238,0.14)",
+                    color: brand.primaryColor,
+                    border: "1px solid rgba(34,211,238,0.35)",
                   }}
                 >
-                  {expired ? "Expired" : "Active"}
+                  Active
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="px-6 pb-6 pt-0">
-              {expired ? (
-                <div>
-                  <p
-                    className="text-[19px] font-semibold leading-snug"
-                    style={{ fontFamily: brand.fontHeading }}
-                  >
-                    Your session timed out
-                  </p>
-                  <p
-                    className="mt-2 text-[14px] leading-relaxed"
-                    style={{ color: brand.neutralColor }}
-                  >
-                    Thirty quiet minutes passed, so we closed it. Sign in again to pick up where you
-                    left off.
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <p
-                    className="text-[44px] font-bold leading-none"
-                    style={{ ...num, letterSpacing: "-0.02em" }}
-                  >
-                    {mm}
-                    <span style={{ color: brand.accentColor }}>:</span>
-                    {ss}
-                  </p>
-                  <p className="mt-2 text-[14px]" style={{ color: brand.neutralColor }}>
-                    left before this session expires
-                  </p>
-                </div>
-              )}
-
-              {/* signature pulse rail */}
-              <div
-                className="mt-5 relative h-[6px] w-full overflow-hidden"
-                style={{ borderRadius: 999, backgroundColor: "rgba(255,255,255,0.08)" }}
-                aria-hidden="true"
+              <p
+                className="text-[19px] font-semibold leading-snug"
+                style={{ fontFamily: brand.fontHeading }}
               >
-                <div
-                  className="np-trans h-full"
-                  style={{
-                    width: `${expired ? 0 : pct}%`,
-                    borderRadius: 999,
-                    background: `linear-gradient(90deg, ${brand.primaryColor}, ${brand.accentColor})`,
-                    boxShadow: `0 0 24px 0 ${brand.accentColor}`,
-                  }}
-                />
-                {!expired && (
-                  <span
-                    className="np-pulse absolute inset-y-0 left-0 w-10"
-                    style={{
-                      background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent)`,
-                    }}
-                  />
-                )}
-              </div>
-
-              <p className="mt-5 text-[15px] leading-relaxed">
-                Session ends after 30 minutes of inactivity
+                Signed in on this device
               </p>
-              <p className="mt-2 text-[13px]" style={{ color: brand.neutralColor }}>
-                {ACCOUNT.device}
+              <p className="mt-2 text-[14px] leading-relaxed" style={{ color: brand.neutralColor }}>
+                Sessions are tracked by the server and end automatically after 30 minutes without
+                activity, or the moment you sign out. If a server check ever comes back as expired,
+                you'll be moved to the sign-in screen with a notice.
               </p>
             </CardContent>
           </Card>
@@ -581,8 +514,8 @@ export default function Screen() {
                   htmlFor="deactivate-ack"
                   className="text-[14px] leading-relaxed cursor-pointer"
                 >
-                  I understand that {ACCOUNT.expenses} expenses and {ACCOUNT.categories} categories
-                  stay locked to a closed account.
+                  I understand this cannot be undone: my {expenseCount} expenses and {categoryCount}{" "}
+                  categories will be permanently deleted once this account is closed.
                 </Label>
               </div>
 

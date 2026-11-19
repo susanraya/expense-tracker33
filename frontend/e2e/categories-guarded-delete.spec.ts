@@ -110,7 +110,7 @@ test.describe("[AC-019]-[AC-023] category create, rename and guarded delete", ()
     await expect(expenseRow).toContainText(renamed);
   });
 
-  test("[AC-019] deleting a category with no expenses, after confirming, removes it from the list", async ({
+  test("[AC-036] deleting a category with no expenses removes it from the list immediately", async ({
     page,
   }) => {
     await registerAndSignIn(page);
@@ -119,12 +119,11 @@ test.describe("[AC-019]-[AC-023] category create, rename and guarded delete", ()
 
     const row = page.getByRole("row", { name: new RegExp(name) });
     await row.getByRole("button", { name: new RegExp(`delete ${name}`, "i") }).click();
-    await row.getByRole("button", { name: new RegExp(`confirm delete ${name}`, "i") }).click();
 
     await expect(page.getByRole("row", { name: new RegExp(name) })).toHaveCount(0);
   });
 
-  test("[AC-020] deleting a category that has an expense assigned shows the warning explaining how to proceed, and the category and the expense both remain", async ({
+  test("[AC-036] deleting a category that has an expense assigned removes the category, and the expense remains but is now uncategorised", async ({
     page,
   }) => {
     await registerAndSignIn(page);
@@ -146,13 +145,13 @@ test.describe("[AC-019]-[AC-023] category create, rename and guarded delete", ()
     await page.goto("/categories");
     const row = page.getByRole("row", { name: new RegExp(name) });
     await row.getByRole("button", { name: new RegExp(`delete ${name}`, "i") }).click();
-    await row.getByRole("button", { name: new RegExp(`confirm delete ${name}`, "i") }).click();
 
-    await expect(page.getByText(/still has expenses assigned to it/i)).toBeVisible();
-    await expect(page.getByRole("row", { name: new RegExp(name) })).toBeVisible();
+    await expect(page.getByRole("row", { name: new RegExp(name) })).toHaveCount(0);
 
     await page.goto("/expenses");
-    await expect(page.getByText(description)).toBeVisible();
+    const expenseRow = page.getByRole("row", { name: new RegExp(description) });
+    await expect(expenseRow).toBeVisible();
+    await expect(expenseRow).toContainText(/uncategorised/i);
   });
 
   test("[AC-019] one user's categories are never visible to a second signed-in user", async ({

@@ -118,21 +118,23 @@ test.describe("[AC-012] expense form validation", () => {
     await expect(page.getByRole("table")).toHaveCount(0);
   });
 
-  test("[AC-012] no category selected shows a validation message and creates no expense", async ({
+  test("[AC-036] no category selected creates the expense as uncategorised", async ({
     page,
   }) => {
     await registerAndSignIn(page);
+    const today = todayIso();
     await page.goto("/expenses");
     await page.getByRole("button", { name: /add expense/i }).click();
     const dialog = page.getByRole("dialog");
     await dialog.getByLabel(/amount/i).fill("10.00");
-    await dialog.getByLabel(/date/i).fill(todayIso());
+    await dialog.getByLabel(/date/i).fill(today);
     await dialog.getByRole("button", { name: /save/i }).click();
 
-    await expect(dialog).toBeVisible();
-    await expect(dialog).toContainText(/pick a category/i);
-    await dialog.getByRole("button", { name: /cancel/i }).click();
-    await expect(page.getByRole("table")).toHaveCount(0);
+    await expect(dialog).toHaveCount(0);
+    const firstRow = page.getByRole("table").locator("tbody tr").first();
+    await expect(firstRow).toContainText(today);
+    await expect(firstRow).toContainText("$10.00");
+    await expect(firstRow).toContainText(/uncategorised/i);
   });
 });
 
