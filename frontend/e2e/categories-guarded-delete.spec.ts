@@ -110,7 +110,7 @@ test.describe("[AC-019]-[AC-023] category create, rename and guarded delete", ()
     await expect(expenseRow).toContainText(renamed);
   });
 
-  test("[AC-036] deleting a category with no expenses removes it from the list immediately", async ({
+  test("[AC-022] deleting an unused category after confirming removes it from the list immediately", async ({
     page,
   }) => {
     await registerAndSignIn(page);
@@ -123,7 +123,7 @@ test.describe("[AC-019]-[AC-023] category create, rename and guarded delete", ()
     await expect(page.getByRole("row", { name: new RegExp(name) })).toHaveCount(0);
   });
 
-  test("[AC-036] deleting a category that has an expense assigned removes the category, and the expense remains but is now uncategorised", async ({
+  test("[AC-023] attempting to delete a category that has expenses assigned shows a warning explaining how to proceed, and the category is still listed", async ({
     page,
   }) => {
     await registerAndSignIn(page);
@@ -146,12 +146,29 @@ test.describe("[AC-019]-[AC-023] category create, rename and guarded delete", ()
     const row = page.getByRole("row", { name: new RegExp(name) });
     await row.getByRole("button", { name: new RegExp(`delete ${name}`, "i") }).click();
 
-    await expect(page.getByRole("row", { name: new RegExp(name) })).toHaveCount(0);
+    // The warning explains how to proceed (reassign or delete the expenses first),
+    // and the category is still listed -- nothing was deleted.
+    await expect(
+      page.getByText(/reassign|delete them before deleting the category/i),
+    ).toBeVisible();
+    await expect(page.getByRole("row", { name: new RegExp(name) })).toBeVisible();
 
+    // The expense itself is untouched: still assigned to the original category.
     await page.goto("/expenses");
     const expenseRow = page.getByRole("row", { name: new RegExp(description) });
     await expect(expenseRow).toBeVisible();
-    await expect(expenseRow).toContainText(/uncategorised/i);
+    await expect(expenseRow).toContainText(name);
+  });
+
+  test("[NFR-008] a user with no categories sees the empty state, not an empty or broken widget", async ({
+    page,
+  }) => {
+    await registerAndSignIn(page);
+    await page.goto("/categories");
+
+    await expect(page.getByRole("table")).toHaveCount(0);
+    await expect(page.getByText(/no categories yet/i)).toBeVisible();
+    await expect(page.getByText(/add your first category/i)).toBeVisible();
   });
 
   test("[AC-019] one user's categories are never visible to a second signed-in user", async ({

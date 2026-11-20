@@ -11,14 +11,6 @@ const { Button, Input, Label, Badge, Table, THead, TBody, TR, TH, TD, Empty } = 
 
 const { Plus, Trash, Edit, AlertCircle, CheckCircle } = Icons;
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function fmtDate(iso) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-}
-
 function hexToRgba(hex, alpha) {
   const h = String(hex).replace("#", "");
   const full =
@@ -94,7 +86,7 @@ export default function Screen() {
         method: "POST",
         body: JSON.stringify({ name }),
       });
-      setCategories((prev) => [created, ...prev]);
+      setCategories((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
       setNewName("");
       setMessage({
         tone: "success",
@@ -106,7 +98,7 @@ export default function Screen() {
         setMessage({
           tone: "error",
           title: "That name is already taken",
-          body: `You already have a category called “${name}”. Pick a different name.`,
+          body: err.message,
         });
       } else {
         setMessage({
@@ -147,7 +139,11 @@ export default function Screen() {
         method: "PATCH",
         body: JSON.stringify({ name }),
       });
-      setCategories((prev) => prev.map((c) => (c.id === cat.id ? updated : c)));
+      setCategories((prev) =>
+        prev
+          .map((c) => (c.id === cat.id ? updated : c))
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      );
       setRenamingId(null);
       setRenameError("");
       setMessage({
@@ -157,7 +153,7 @@ export default function Screen() {
       });
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setRenameError(`You already have a category called “${name}”.`);
+        setRenameError(err.message);
       } else {
         setRenameError("Something went wrong saving that name. Try again.");
       }
@@ -166,8 +162,9 @@ export default function Screen() {
 
   /* ---------- delete (DELETE /categories/{id}) ---------- */
 
-  async function confirmDelete(cat) {
+  async function requestDelete(cat) {
     setDeletingId(cat.id);
+    setMessage(null);
     try {
       await apiFetch(`/categories/${cat.id}`, { method: "DELETE" });
       setCategories((prev) => prev.filter((c) => c.id !== cat.id));
@@ -177,11 +174,19 @@ export default function Screen() {
         body: `“${cat.name}” is gone.`,
       });
     } catch (err) {
-      setMessage({
-        tone: "error",
-        title: "We couldn’t delete that category",
-        body: "Something went wrong talking to the server. Try again.",
-      });
+      if (err instanceof ApiError && err.status === 409) {
+        setMessage({
+          tone: "error",
+          title: "Can’t delete this category yet",
+          body: err.message,
+        });
+      } else {
+        setMessage({
+          tone: "error",
+          title: "We couldn’t delete that category",
+          body: "Something went wrong talking to the server. Try again.",
+        });
+      }
     } finally {
       setDeletingId(null);
     }
@@ -462,7 +467,7 @@ export default function Screen() {
                         className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em]"
                         style={{ color: brand.neutralColor }}
                       >
-                        Created
+                        Expenses
                       </TH>
                       <TH
                         scope="col"
@@ -530,7 +535,7 @@ export default function Screen() {
                             )}
                           </TD>
                           <TD className="px-4 py-4 text-sm" style={{ color: brand.neutralColor }}>
-                            {cat.created_at ? fmtDate(cat.created_at) : "—"}
+                            {typeof cat.expense_count === "number" ? cat.expense_count : "—"}
                           </TD>
                           <TD className="px-5 py-4 text-right sm:px-7">
                             {!editing && (
@@ -547,7 +552,7 @@ export default function Screen() {
                                 </Button>
                                 <Button
                                   type="button"
-                                  onClick={() => confirmDelete(cat)}
+                                  onClick={() => requestDelete(cat)}
                                   disabled={deletingId === cat.id}
                                   aria-label={`Delete ${cat.name}`}
                                   className="np-btn np-focus h-9 px-3 text-xs"

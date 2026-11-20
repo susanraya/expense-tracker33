@@ -76,23 +76,21 @@ def _validate_category_name(value: str) -> str:
     value = value.strip()
     if not value:
         raise ValueError("name must not be empty")
-    if len(value) > 100:
-        raise ValueError("name must be at most 100 characters long")
+    if len(value) > 64:
+        raise ValueError("name must be at most 64 characters long")
     return value
 
 
 class CategoryOut(BaseModel):
     id: str
     name: str
-    color: str | None = None
-    created_at: datetime
+    expense_count: int
 
 
 class CategoryCreate(BaseModel):
-    """POST /categories body (AC-036)."""
+    """POST /categories body (AC-019/AC-020): non-blank name, unique per user."""
 
     name: str
-    color: str | None = None
 
     @field_validator("name")
     @classmethod
@@ -101,16 +99,13 @@ class CategoryCreate(BaseModel):
 
 
 class CategoryUpdate(BaseModel):
-    """PATCH /categories/{id} body: both fields optional."""
+    """PATCH /categories/{id} body (AC-021): a new, non-blank name."""
 
-    name: str | None = None
-    color: str | None = None
+    name: str
 
     @field_validator("name")
     @classmethod
-    def _check_name(cls, value: str | None) -> str | None:
-        if value is None:
-            return value
+    def _check_name(cls, value: str) -> str:
         return _validate_category_name(value)
 
 
