@@ -4,7 +4,7 @@ data model."""
 import re
 from datetime import date as _date
 from datetime import datetime
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 
 from pydantic import BaseModel, field_serializer, field_validator
 
@@ -112,31 +112,38 @@ class CategoryUpdate(BaseModel):
 def _validate_amount(value: Decimal) -> Decimal:
     if value <= 0:
         raise ValueError("amount must be greater than 0")
-    return value
+    # AC-011: fixed 2-decimal precision end to end, no float drift.
+    return value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
 class ExpenseOut(BaseModel):
+    """AC-013: no recurring-schedule, receipt-attachment or currency field --
+    the single supported currency is implicit."""
+
     id: str
     amount: Decimal
     date: _date
-    description: str
     category_id: str | None = None
     category_name: str | None = None
+    note: str | None = None
     created_at: datetime
 
     @field_serializer("amount")
-    def _serialize_amount(self, value: Decimal) -> float:
-        """Serialised as a plain number; storage keeps the exact Decimal."""
-        return float(value)
+    def _serialize_amount(self, value: Decimal) -> str:
+        """A decimal string at fixed 2dp (AC-011): storage keeps the exact
+        Decimal, and serialising to a float here would be exactly the drift
+        this criterion rules out."""
+        return str(value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
 class ExpenseCreate(BaseModel):
-    """POST /expenses body."""
+    """POST /expenses body: amount, date and category_id are required; note
+    is optional (AC-012)."""
 
     amount: Decimal
     date: _date
-    description: str
-    category_id: str | None = None
+    category_id: str
+    note: str | None = None
 
     @field_validator("amount")
     @classmethod
@@ -149,7 +156,7 @@ class ExpenseUpdate(BaseModel):
 
     amount: Decimal | None = None
     date: _date | None = None
-    description: str | None = None
+    note: str | None = None
     category_id: str | None = None
 
     @field_validator("amount")

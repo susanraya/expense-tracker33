@@ -49,7 +49,7 @@ def test_ac036_create_update_delete_persist_to_postgresql_and_are_visible_later(
             json={
                 "amount": 9.5,
                 "date": "2026-01-01",
-                "description": "pg persistence",
+                "note": "pg persistence",
                 "category_id": category["id"],
             },
             headers=headers,

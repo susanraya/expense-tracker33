@@ -139,7 +139,7 @@ def test_ac021_patch_updates_the_name_and_reflects_on_expenses(client: TestClien
         json={
             "amount": 10.0,
             "date": "2026-01-01",
-            "description": "milk",
+            "note": "milk",
             "category_id": created["id"],
         },
         headers=_auth_headers(token),
@@ -232,7 +232,7 @@ def test_ac023_delete_with_expenses_returns_409_and_changes_nothing(
         json={
             "amount": 10.0,
             "date": "2026-01-01",
-            "description": "milk",
+            "note": "milk",
             "category_id": created["id"],
         },
         headers=_auth_headers(token),
