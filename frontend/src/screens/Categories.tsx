@@ -1,5 +1,4 @@
 // @ts-nocheck -- generated from the approved design under its JS runtime contract; not hand-written TypeScript.
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
 
 import * as UI from "@/lib/ui";
@@ -57,7 +56,7 @@ export default function Screen() {
       const data = await apiFetch("/categories");
       setCategories(Array.isArray(data) ? data : []);
       setStatus("ready");
-    } catch (err) {
+    } catch {
       setStatus("error");
     }
   }, []);
@@ -163,6 +162,7 @@ export default function Screen() {
   /* ---------- delete (DELETE /categories/{id}) ---------- */
 
   async function requestDelete(cat) {
+    if (!window.confirm(`Delete “${cat.name}”? This cannot be undone.`)) return;
     setDeletingId(cat.id);
     setMessage(null);
     try {
