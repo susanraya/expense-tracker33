@@ -4,7 +4,7 @@ data model."""
 import re
 from datetime import date as _date
 from datetime import datetime
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import Decimal
 
 from pydantic import BaseModel, field_serializer, field_validator
 
@@ -76,21 +76,23 @@ def _validate_category_name(value: str) -> str:
     value = value.strip()
     if not value:
         raise ValueError("name must not be empty")
-    if len(value) > 64:
-        raise ValueError("name must be at most 64 characters long")
+    if len(value) > 100:
+        raise ValueError("name must be at most 100 characters long")
     return value
 
 
 class CategoryOut(BaseModel):
     id: str
     name: str
-    expense_count: int
+    color: str | None = None
+    created_at: datetime
 
 
 class CategoryCreate(BaseModel):
-    """POST /categories body (AC-019/AC-020): non-blank name, unique per user."""
+    """POST /categories body (AC-036)."""
 
     name: str
+    color: str | None = None
 
     @field_validator("name")
     @classmethod
@@ -99,51 +101,47 @@ class CategoryCreate(BaseModel):
 
 
 class CategoryUpdate(BaseModel):
-    """PATCH /categories/{id} body (AC-021): a new, non-blank name."""
+    """PATCH /categories/{id} body: both fields optional."""
 
-    name: str
+    name: str | None = None
+    color: str | None = None
 
     @field_validator("name")
     @classmethod
-    def _check_name(cls, value: str) -> str:
+    def _check_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
         return _validate_category_name(value)
 
 
 def _validate_amount(value: Decimal) -> Decimal:
     if value <= 0:
         raise ValueError("amount must be greater than 0")
-    # AC-011: fixed 2-decimal precision end to end, no float drift.
-    return value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    return value
 
 
 class ExpenseOut(BaseModel):
-    """AC-013: no recurring-schedule, receipt-attachment or currency field --
-    the single supported currency is implicit."""
-
     id: str
     amount: Decimal
     date: _date
+    description: str
     category_id: str | None = None
     category_name: str | None = None
-    note: str | None = None
     created_at: datetime
 
     @field_serializer("amount")
-    def _serialize_amount(self, value: Decimal) -> str:
-        """A decimal string at fixed 2dp (AC-011): storage keeps the exact
-        Decimal, and serialising to a float here would be exactly the drift
-        this criterion rules out."""
-        return str(value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+    def _serialize_amount(self, value: Decimal) -> float:
+        """Serialised as a plain number; storage keeps the exact Decimal."""
+        return float(value)
 
 
 class ExpenseCreate(BaseModel):
-    """POST /expenses body: amount, date and category_id are required; note
-    is optional (AC-012)."""
+    """POST /expenses body."""
 
     amount: Decimal
     date: _date
-    category_id: str
-    note: str | None = None
+    description: str
+    category_id: str | None = None
 
     @field_validator("amount")
     @classmethod
@@ -156,7 +154,7 @@ class ExpenseUpdate(BaseModel):
 
     amount: Decimal | None = None
     date: _date | None = None
-    note: str | None = None
+    description: str | None = None
     category_id: str | None = None
 
     @field_validator("amount")

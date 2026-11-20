@@ -29,7 +29,7 @@ def _expense_out(expense: Expense) -> ExpenseOut:
         id=str(expense.id),
         amount=expense.amount,
         date=expense.spent_on,
-        note=expense.note,
+        description=expense.note or "",
         category_id=str(expense.category_id) if expense.category_id else None,
         category_name=category.name if category is not None else None,
         created_at=expense.created_at,
@@ -120,16 +120,19 @@ def list_expenses(
 def create_expense(
     payload: ExpenseCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ) -> ExpenseOut:
-    """AC-011/AC-012/AC-036/NFR-001: owned by the caller; an unknown or
-    other-user category_id is a 404 and creates nothing."""
-    category = _get_owned_category(db, user, payload.category_id)
+    """AC-036/NFR-001: owned by the caller; an unknown or other-user
+    category_id is a 404 and creates nothing."""
+    category_id = None
+    if payload.category_id is not None:
+        category = _get_owned_category(db, user, payload.category_id)
+        category_id = category.id
 
     expense = Expense(
         user_id=user.id,
-        category_id=category.id,
+        category_id=category_id,
         amount=payload.amount,
         spent_on=payload.date,
-        note=payload.note,
+        note=payload.description,
     )
     db.add(expense)
     db.commit()
@@ -162,8 +165,8 @@ def update_expense(
         expense.amount = payload.amount
     if "date" in fields_set and payload.date is not None:
         expense.spent_on = payload.date
-    if "note" in fields_set:
-        expense.note = payload.note
+    if "description" in fields_set and payload.description is not None:
+        expense.note = payload.description
     expense.category_id = new_category_id
 
     db.commit()

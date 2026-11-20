@@ -65,8 +65,7 @@ def _call(client: TestClient, method: str, path: str, headers: dict[str, str]):
         else {
             "amount": 10.0,
             "date": "2026-01-01",
-            "note": "x",
-            "category_id": str(uuid.uuid4()),
+            "description": "x",
         }
     )
     if method == "POST":
@@ -139,12 +138,7 @@ def test_ac036_category_and_expense_created_through_post_survive_a_later_request
     ).json()
     created_expense = client.post(
         "/expenses",
-        json={
-            "amount": 12.34,
-            "date": "2026-01-01",
-            "note": "Persisted",
-            "category_id": created_category["id"],
-        },
+        json={"amount": 12.34, "date": "2026-01-01", "description": "Persisted"},
         headers=headers,
     ).json()
 
